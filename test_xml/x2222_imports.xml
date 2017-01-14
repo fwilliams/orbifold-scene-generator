@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<scene version="0.5.0">
+  <integrator type="path"/>
+
+  <include filename="camera.xml"/>
+  <include filename="defs.xml"/>
+    
+  <shape type="instance">
+    <ref id="scene"/>
+  </shape>
+
+  <shape type="instance">
+    <ref id="scene"/>
+    <transform name="toWorld">
+      <scale x="1" y="1" z="-1"/>
+    </transform>
+  </shape>
+  
+  <shape type="obj">
+    <string name="filename" value="meshes/cbox_luminaire.obj"/>
+    
+    <transform name="toWorld">
+      <translate x="0" y="-0.5" z="0"/>
+    </transform>
+    
+    <ref id="light"/>
+    
+    <emitter type="area">
+      <spectrum name="radiance" value="400:18.4, 500:18.4, 600:18.4, 700:18.4"/>
+    </emitter>
+  </shape>
+
+  <shape type="obj">
+    <string name="filename" value="meshes/cbox_luminaire.obj"/>    
+
+    <ref id="light"/>
+    
+    <emitter type="area">
+      <spectrum name="radiance" value="400:18.4, 500:18.4, 600:18.4, 700:18.4"/>
+    </emitter>
+
+    <transform name="toWorld">
+      <translate x="0" y="-0.5" z="0"/>
+      <scale x="1" y="1" z="-1"/>
+    </transform>
+  </shape>
+
+</scene>
