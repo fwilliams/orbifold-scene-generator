@@ -2,49 +2,6 @@ import numpy as np
 from OpenGL.GL import *
 
 
-def draw_frustum_normals(frustum, scale=1.0, flip_normals=False):
-    def compute_center(n1, n2, f1, f2):
-        half_near = n1 + 0.5*(n2 - n1)
-        half_far = f1 + 0.5*(f2 - f1)
-        return half_near + 0.5*(half_far - half_near)
-
-    scale = -scale if flip_normals else scale
-
-    near_normal = frustum.near_plane.normal * scale
-    left_normal = frustum.left_plane.normal * scale
-    top_normal = frustum.top_plane.normal * scale
-    far_normal = frustum.far_plane.normal * scale
-    right_normal = frustum.right_plane.normal * scale
-    bottom_normal = frustum.bottom_plane.normal * scale
-
-    near_center = frustum.nbr + 0.5*(frustum.ntl - frustum.nbr)
-    far_center = frustum.fbr + 0.5*(frustum.ftl - frustum.fbr)
-    top_center = compute_center(frustum.ntl, frustum.ntr, frustum.ftl, frustum.ftr)
-    bottom_center = compute_center(frustum.nbl, frustum.nbr, frustum.fbl, frustum.fbr)
-    left_center = compute_center(frustum.nbl, frustum.ntl, frustum.fbl, frustum.ftl)
-    right_center = compute_center(frustum.nbr, frustum.ntr, frustum.fbr, frustum.ftr)
-
-    glBegin(GL_LINES)
-    glVertex4f(*near_center)
-    glVertex4f(*(near_center + near_normal))
-
-    glVertex4f(*far_center)
-    glVertex4f(*(far_center + far_normal))
-
-    glVertex4f(*left_center)
-    glVertex4f(*(left_center + left_normal))
-
-    glVertex4f(*right_center)
-    glVertex4f(*(right_center + right_normal))
-
-    glVertex4f(*bottom_center)
-    glVertex4f(*(bottom_center + bottom_normal))
-
-    glVertex4f(*top_center)
-    glVertex4f(*(top_center + top_normal))
-    glEnd()
-
-
 def draw_wire_grid(width, height, nx, ny):
     dx = width / nx
     dy = height / ny
@@ -60,7 +17,7 @@ def draw_wire_grid(width, height, nx, ny):
     glEnd()
 
 
-def draw_checker_plane(width, height, nx, ny, color1=(1, 1, 1, 1), color2=(0.5, 0.5, 0.5, 1.0)):
+def draw_solid_grid(width, height, nx, ny, color1=(1, 1, 1, 1), color2=(0.5, 0.5, 0.5, 1.0)):
     glBegin(GL_QUADS)
 
     dx = width / nx
