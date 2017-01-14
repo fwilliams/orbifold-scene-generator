@@ -7,6 +7,11 @@ EPSILON = 1e-12  # The margin of error used to test if vertices are co-planar
 
 
 def translation_matrix(v):
+    """
+    Return a 4x4 homogeneous translation matrix associated with a transaltion by the input vector, v.
+    :param v: The translation vector
+    :return: A 4x4 homogeneous translation matrix
+    """
     v = make_projective_point(v[:3])
     ret = np.identity(4)
     ret[:4, 3] = v
@@ -75,6 +80,12 @@ def coplanar(*args):
 
 
 def verify_matrix_shape(v, *dims):
+    """
+    Check if the numpy vector v has shape matching dims. Raise a ValueError if not.
+    :param v: The vector whose shape is to be checked
+    :param dims: The expected dimensions
+    :return: v if it has the correct shape. Otherwise a ValueError is raised.
+    """
     if isinstance(v, np.matrix):
         raise ValueError("Do not use np.matrix. Use a 2D np.array instead")
 
