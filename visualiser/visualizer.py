@@ -43,8 +43,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.setMouseTracking(True)
         self.elapsed = 0.0
 
-        fd = tiling.X2222(560, (0, 0, 0), (0, 0, 560), (560, 0, 560), (560, 0, 0), )
-        self.base_kernel = tiling.SquareKernel(1, (0, 0), fd)
+        fd = tiling.X442(560, (0, 0, 0), (0, 0, 560), (560, 0, 0))
+        self.base_kernel = tiling.SquareKernel(0, (0, 0), fd)
         self.frustum = scene_parsing.make_frustum("test_xml/camera.xml")
         self.kt = tiling.KernelTiling(self.base_kernel, self.frustum, 1)
 
@@ -84,7 +84,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         print "Generating geometry..."
 
         tilemap = dict()
-        for k in self.kt.visible_kernels:
+        for k in [self.base_kernel]: #self.kt.visible_kernels:
             color = np.random.rand(4)
             color[3] = 1.0
 

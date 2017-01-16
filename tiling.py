@@ -117,7 +117,7 @@ class X442(ReflectionOrbifold):
             cur = self._vertices[i]
             nxt = self._vertices[nxt_i]
 
-            cos_angle = np.dot(prv - cur, nxt - cur)
+            cos_angle = np.dot(prv - cur, nxt - cur) / (np.linalg.norm(prv-cur) * np.linalg.norm(nxt-cur))
 
             if abs(cos_angle) < EPSILON:
                 if self._real_basis:
@@ -143,26 +143,29 @@ class X442(ReflectionOrbifold):
         reflect1 = utils.reflection_matrix(self.mirror_planes[self._hypoteneuse])
         p = copy.deepcopy(self.mirror_planes[(self._hypoteneuse + 1) % len(self.vertices)])
         p.transform(reflect1)
+
         reflect2 = utils.reflection_matrix(p)
-        p = copy.deepcopy(self.mirror_planes[self._hypoteneuse])
-        p.transform(reflect2)
-        reflect3 = utils.reflection_matrix(p)
+        reflect3 = utils.reflection_matrix(self.mirror_planes[(self._hypoteneuse + 1) % len(self.vertices)])
 
-        p = copy.deepcopy(self.mirror_planes[(self._hypoteneuse + 2) % len(self.vertices)])
-        reflect4 = np.dot(utils.reflection_matrix(p), reflect3)
-        reflect5 = np.dot(utils.reflection_matrix(p), reflect2)
-        reflect6 = np.dot(utils.reflection_matrix(p), reflect1)
-        reflect7 = utils.reflection_matrix(p)
+        # p = copy.deepcopy(self.mirror_planes[self._hypoteneuse])
+        # p.transform(reflect2)
+        # reflect3 = utils.reflection_matrix(p)
+        #
+        # p = copy.deepcopy(self.mirror_planes[(self._hypoteneuse + 2) % len(self.vertices)])
+        # reflect4 = np.dot(utils.reflection_matrix(p), reflect3)
+        # reflect5 = np.dot(utils.reflection_matrix(p), reflect2)
+        # reflect6 = np.dot(utils.reflection_matrix(p), reflect1)
+        # reflect7 = utils.reflection_matrix(p)
 
-        base = X2222.translational_lattice_to_lattice(translational_lattice_coord)
+        base = X442.translational_lattice_to_lattice(translational_lattice_coord)
         return [(np.array((0, 0, 0, 0)) + base, np.identity(4)),
                 (np.array((1, 0, 0, 0)) + base, reflect1),
                 (np.array((1, 1, 0, 0)) + base, reflect2),
-                (np.array((1, 1, 1, 0)) + base, reflect3),
-                (np.array((1, 1, 1, 1)) + base, reflect4),
-                (np.array((0, 1, 1, 1)) + base, reflect5),
-                (np.array((0, 0, 1, 1)) + base, reflect6),
-                (np.array((0, 0, 0, 1)) + base, reflect7)]
+                (np.array((1, 1, 1, 0)) + base, reflect3),]
+                # (np.array((1, 1, 1, 1)) + base, reflect4),
+                # (np.array((0, 1, 1, 1)) + base, reflect5),
+                # (np.array((0, 0, 1, 1)) + base, reflect6),
+                # (np.array((0, 0, 0, 1)) + base, reflect7)]
 
     @staticmethod
     def translational_lattice_to_lattice(tx_lattice):
