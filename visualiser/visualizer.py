@@ -1,5 +1,5 @@
 import sys
-from PyQt4 import QtCore, QtGui, QtOpenGL
+from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 import numpy as np
 
@@ -12,20 +12,21 @@ from visualiser import gl_geometry
 try:
     from OpenGL.GL import *
     from OpenGL.GLU import *
+    from OpenGL.GLUT import *
 
 except ImportError:
-    app = QtGui.QApplication(sys.argv)
-    QtGui.QMessageBox.critical(None, "OpenGL Import Error", "PyOpenGL must be installed to run this example.")
+    app = QtWidgets.QApplication(sys.argv)
+    QtWidgets.QMessageBox.critical(None, "OpenGL Import Error", "PyOpenGL must be installed to run this example.")
     sys.exit(1)
 
 
-class Window(QtGui.QWidget):
+class Window(QtWidgets.QWidget):
     def __init__(self):
         super(Window, self).__init__()
 
         self.gl_widget = GLWidget()
 
-        main_layout = QtGui.QHBoxLayout()
+        main_layout = QtWidgets.QHBoxLayout()
         main_layout.addWidget(self.gl_widget)
 
         self.setLayout(main_layout)
@@ -44,7 +45,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.elapsed = 0.0
 
         fd = tiling.X442(560, (0, 0, 0), (0, 0, 560), (560, 0, 0))
-        self.base_kernel = tiling.SquareKernel(0, (0, 0), fd)
+        self.base_kernel = tiling.SquareKernel(1, (0, 0), fd)
         self.frustum = scene_parsing.make_frustum("test_xml/camera.xml")
         self.kt = tiling.KernelTiling(self.base_kernel, self.frustum, 1)
 
@@ -65,6 +66,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         return QtCore.QSize(800, 600)
 
     def initializeGL(self):
+        glutInit(len(sys.argv), sys.argv)
         glClearColor(0, 0, 0, 1.0)
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
@@ -84,7 +86,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         print "Generating geometry..."
 
         tilemap = dict()
-        for k in [self.base_kernel]: #self.kt.visible_kernels:
+        for k in self.kt.visible_kernels:
             color = np.random.rand(4)
             color[3] = 1.0
 
@@ -154,7 +156,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = Window()
     window.show()
     sys.exit(app.exec_())

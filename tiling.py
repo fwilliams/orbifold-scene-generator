@@ -7,6 +7,27 @@ from geometry import shapes, utils
 EPSILON = 1e-12
 
 
+def dihedral_group(plane1, plane2):
+    angle = np.abs(np.pi - np.arccos(np.dot(plane1.normal, plane2.normal)))
+    n = (2.0*np.pi) / angle
+
+    if np.abs(np.round(n) - n) > EPSILON:
+        raise ValueError("Reflection planes in dihedral group must have internal angle which is an integer divisor of "
+                         "two pi. Got %f which divides two pi into %f." % (angle, n))
+
+    n = int(n)
+    last_transform = np.identity(4)
+    last_coord = np.zeros(n/2)
+
+    for i in range(n):
+        yield last_coord, last_transform
+
+        p = copy.deepcopy([plane1, plane2][i % 2])
+        p.transform(last_transform)
+        last_transform = np.dot(utils.reflection_matrix(p), last_transform)
+        last_coord[i % (n / 2)] = 1 if last_coord[i % (n / 2)] == 0 else 0
+
+
 class ReflectionOrbifold(object):
     def __init__(self, height, vertices, mirror_edges):
         """
@@ -38,6 +59,28 @@ class ReflectionOrbifold(object):
             self._mirror_planes.append(shapes.Plane(v1, v2, vup))
             self._mirror_transforms.append(utils.reflection_matrix(self._mirror_planes[-1]))
         self._vertices = vs
+
+        min_angle = np.pi * 2.0
+        min_i = 0
+        for i in range(len(self.vertices)):
+            prv_i = (i - 1) % len(self._vertices)
+            nxt_i = (i + 1) % len(self._vertices)
+            prv = self._vertices[prv_i]
+            cur = self._vertices[i]
+            nxt = self._vertices[nxt_i]
+
+            cos_angle = np.dot(prv - cur, nxt - cur) / (np.linalg.norm(prv-cur) * np.linalg.norm(nxt-cur))
+            min_angle = min(min_angle, np.arccos(cos_angle) % (2.0 * np.pi))
+            min_i = i
+
+        dihedral_planes = self.mirror_planes[(min_i - 1) % len(self._vertices)], self.mirror_planes[min_i]
+        other_planes = copy.deepcopy(self.mirror_planes)
+        other_planes.pop(min_i)
+        other_planes.pop((min_i - 1) % len(self._vertices))
+
+        dihedral_grp = list(dihedral_group(*dihedral_planes))
+        for c, _ in dihedral_grp:
+            print _
 
     @property
     def vertices(self):
@@ -126,8 +169,8 @@ class X442(ReflectionOrbifold):
                                      (str(prv), str(nxt), str(cur), np.degrees(np.arccos(cos_angle))))
                 w = np.linalg.norm(prv - cur)
                 d = np.linalg.norm(nxt - cur)
-                self._real_basis = np.array((self.mirror_planes[prv_i].normal * w * 2,
-                                             self.mirror_planes[nxt_i].normal * d * 2))
+                self._real_basis = np.array((self.mirror_planes[i].normal * w * 2,
+                                             self.mirror_planes[prv_i].normal * d * 2))
                 self.scale = np.array((w, d))
                 self._hypoteneuse = nxt_i
             elif abs(np.arccos(cos_angle) - np.pi/4.0) > EPSILON:
@@ -140,38 +183,15 @@ class X442(ReflectionOrbifold):
         return self._real_basis
 
     def translational_fds(self, translational_lattice_coord):
-        reflect1 = utils.reflection_matrix(self.mirror_planes[self._hypoteneuse])
-        p = copy.deepcopy(self.mirror_planes[(self._hypoteneuse + 1) % len(self.vertices)])
-        p.transform(reflect1)
-
-        reflect2 = utils.reflection_matrix(p)
-        reflect3 = utils.reflection_matrix(self.mirror_planes[(self._hypoteneuse + 1) % len(self.vertices)])
-
-        # p = copy.deepcopy(self.mirror_planes[self._hypoteneuse])
-        # p.transform(reflect2)
-        # reflect3 = utils.reflection_matrix(p)
-        #
-        # p = copy.deepcopy(self.mirror_planes[(self._hypoteneuse + 2) % len(self.vertices)])
-        # reflect4 = np.dot(utils.reflection_matrix(p), reflect3)
-        # reflect5 = np.dot(utils.reflection_matrix(p), reflect2)
-        # reflect6 = np.dot(utils.reflection_matrix(p), reflect1)
-        # reflect7 = utils.reflection_matrix(p)
-
+        p1, p2 = self.mirror_planes[self._hypoteneuse], self.mirror_planes[(self._hypoteneuse + 1) % len(self.vertices)]
         base = X442.translational_lattice_to_lattice(translational_lattice_coord)
-        return [(np.array((0, 0, 0, 0)) + base, np.identity(4)),
-                (np.array((1, 0, 0, 0)) + base, reflect1),
-                (np.array((1, 1, 0, 0)) + base, reflect2),
-                (np.array((1, 1, 1, 0)) + base, reflect3),]
-                # (np.array((1, 1, 1, 1)) + base, reflect4),
-                # (np.array((0, 1, 1, 1)) + base, reflect5),
-                # (np.array((0, 0, 1, 1)) + base, reflect6),
-                # (np.array((0, 0, 0, 1)) + base, reflect7)]
+        return [(coord + base, tx)for coord, tx in dihedral_group(p1, p2)]
 
     @staticmethod
     def translational_lattice_to_lattice(tx_lattice):
+        # TODO: How to generate this automatically?
         utils.verify_matrix_shape(tx_lattice, 2)
-        return tx_lattice[0] * np.array((1, 2, 1, 0)) + tx_lattice[1] * np.array((1, 0, 1, 2))
-        return np.array(tx_lattice) * 2.0
+        return tx_lattice[0] * np.array((2, 1, 0, -1)) + tx_lattice[1] * np.array((0, 1, 2, 1))
 
 
 class SquareKernel:

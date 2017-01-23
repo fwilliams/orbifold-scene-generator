@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 import numpy as np
 from geometry import utils
@@ -100,6 +100,7 @@ class ArcballCameraController(QtCore.QObject):
                 r_mat = utils.axis_angle_rotation_matrix(axis, angle)
                 self._camera_rotation = np.dot(r_mat, self._camera_rotation)
         elif event.type() == QtCore.QEvent.Wheel:
-            notches = event.delta() / 120
+            # notches = event.delta() / 120
             # TODO: Zooming
+            pass
         return super(ArcballCameraController, self).eventFilter(source, event)
