@@ -4,7 +4,164 @@ import numpy as np
 
 from geometry import shapes, utils
 
-EPSILON = 1e-12
+EPSILON = 1e-8
+
+
+class PlanarReflectionGroup(object):
+    def __init__(self, height, *vertices):
+        """
+        Construct the reflection group corresponding to a configuration of mirrors specified by the closed, convex
+        polygon determined by the parameter vertices. The group must either be a purely dihedral group of integer order
+        or a wallpaper group. In both cases, we construct the transformations for a dihedral group.
+        In the latter case, we also construct a set of translational basis vectors and any element in
+        the group is parameterized by a linear combination of the translation vectors as well as one of the
+        transformations in the dihedral subgroup.
+
+        :param vertices: The vertices of the fundamental domain.
+        """
+
+        #
+        # Convert the vertices to projective coordinates
+        #
+        vs = [np.array((v[0], 0.0, v[1])) if len(v) == 2 else v for v in vertices]
+        vs = [utils.make_projective_point(v) for v in vs]
+
+        if not utils.coplanar(*vs):
+            raise ValueError("Cannot construct a kaleidoscope from non-coplanar vertices")
+        self._vertices = vs
+
+        #
+        # Store the ground plane and height of the ceiling
+        #
+        self._height = height
+        self._ground_plane = shapes.Plane(vs[0], vs[1], vs[2])
+
+        #
+        # Populate mirror edge index pairs and list of vertices
+        #
+        self._mirror_edges = []
+        self._mirror_planes = []
+
+        for e in range(len(vertices)):
+            v1, v2 = vs[e], vs[(e + 1) % len(vs)]
+            vup = vs[e] + self._ground_plane.normal
+            self._mirror_edges.append((e, e + 1 % len(vs)))
+            self._mirror_planes.append(shapes.Plane(v1, v2, vup))
+
+        #
+        # Find the two edges with the mimimal internal angle and store their planes as plane1 and plane2
+        # min_angle_edge_index stores the index of the edge before the minimum angle
+        # plane1 and plane2 correspond to the mirror planes forming the dihedral subgroup of this reflection group
+        # ctr_vertex index corresponds to the index of the vertex at the center of the dihedral tile
+        #
+        min_angle = np.pi * 2.0
+        min_angle_edge_index = 0
+        for i in range(len(self._vertices)):
+            prv_i = (i - 1) % len(self._vertices)
+            nxt_i = (i + 1) % len(self._vertices)
+            prv = self._vertices[prv_i]
+            cur = self._vertices[i]
+            nxt = self._vertices[nxt_i]
+
+            cos_angle = np.dot(prv - cur, nxt - cur) / (np.linalg.norm(prv-cur) * np.linalg.norm(nxt-cur))
+            min_angle = min(min_angle, np.arccos(cos_angle) % (2.0 * np.pi))
+            min_angle_edge_index = i
+
+        plane1_index, plane2_index = (min_angle_edge_index - 1) % len(self._vertices), min_angle_edge_index
+        plane1, plane2 = self._mirror_planes[plane1_index], self._mirror_planes[plane2_index]
+        ctr_vertex_index = plane2_index
+
+        #
+        # Compute the order of the dihedral subgroup
+        #
+        angle = np.abs(np.pi - np.arccos(np.dot(plane1.normal, plane2.normal)))
+        self._two_n = (2.0 * np.pi) / angle
+        if np.abs(np.round(self._two_n) - self._two_n) > EPSILON:
+            raise ValueError(
+                "Reflection planes in dihedral group must have internal angle which is an integer divisor of "
+                "two pi. Got %f which divides two pi into %f." % (angle, self._two_n))
+        self._two_n = int(self._two_n)
+
+        #
+        # Compute the transformations of each element in the dihedral subgroup
+        #
+        self._dihedral_transforms = []
+        last_transform = np.identity(4)
+        for i in range(self._two_n):
+            self._dihedral_transforms.append(last_transform)
+            p = copy.deepcopy([plane1, plane2][i % 2])
+            p.transform(last_transform)
+            last_transform = np.dot(utils.reflection_matrix(p), last_transform)
+
+        #
+        # Compute the normals of the outer edges of the polygon (which bound the dihedral tile) and the distance from
+        # the center of the dihedral tile to each outer edge.
+        # Use this information to construct the translational basis vectors for the group.
+        #
+        outer_edges = copy.deepcopy(self._mirror_edges)
+        outer_edges.pop(min_angle_edge_index)
+        outer_edges.pop((min_angle_edge_index - 1) % len(self._vertices))
+
+        outer_directions = []
+        for tx in self._dihedral_transforms:
+            for e in outer_edges:
+                v1, v2 = np.dot(tx, self._vertices[e[0]]), np.dot(tx, self._vertices[e[1]])
+                outer_directions.append((v1, v2))
+
+        i = 0
+        while i < len(outer_directions):
+            v1, v2 = outer_directions[i]
+            v3, v4 = outer_directions[(i+1) % len(outer_directions)]
+            if np.linalg.matrix_rank(np.column_stack((v2-v1, v4-v3)), tol=EPSILON) == 1:
+                if np.allclose(v2, v4):
+                    outer_directions[i] = (v1, v3)
+                    outer_directions.pop((i+1) % len(outer_directions))
+                elif np.allclose(v1, v3):
+                    outer_directions[i] = (v2, v4)
+                    outer_directions.pop((i+1) % len(outer_directions))
+                else:
+                    assert False, "Bad case!"
+            i += 1
+
+        # Due to the dihedral symmetry, we know half the outer edges are just reflected copies of the other half
+        # so we can delete them to get the set of edges whose normals form the basis
+        outer_directions = outer_directions[0:len(outer_directions)/2]
+        self._translational_basis = [0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index] for e in outer_directions]
+
+    @property
+    def n(self):
+        return self._two_n / 2
+
+    @property
+    def transformations(self):
+        return self._dihedral_transforms
+
+    @property
+    def translational_subgroup_basis(self):
+        if (self._two_n / 2) not in (1, 2, 4, 3, 6):
+            raise ValueError("Dihedral group of order %d does not have a translational subgroup" % self._two_n)
+
+        return self._translational_basis
+
+    @property
+    def vertices(self):
+        return self._vertices
+
+    @property
+    def mirror_edges(self):
+        return self._mirror_edges
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def ground_plane(self):
+        return self._ground_plane
+
+    @property
+    def mirror_planes(self):
+        return self._mirror_planes
 
 
 def dihedral_group(plane1, plane2):
@@ -78,9 +235,9 @@ class ReflectionOrbifold(object):
         other_planes.pop(min_i)
         other_planes.pop((min_i - 1) % len(self._vertices))
 
-        dihedral_grp = list(dihedral_group(*dihedral_planes))
-        for c, _ in dihedral_grp:
-            print _
+        # dihedral_grp = list(dihedral_group(*dihedral_planes))
+        # for c, _ in dihedral_grp:
+        #     print _
 
     @property
     def vertices(self):

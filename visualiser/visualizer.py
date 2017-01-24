@@ -44,6 +44,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.setMouseTracking(True)
         self.elapsed = 0.0
 
+        prg = tiling.PlanarReflectionGroup(560, (0, 0, 0), (0.5, 0, 0), (0.5, 0, 0.5*np.sqrt(3.0)))
+        print prg.n
+        print prg.translational_subgroup_basis
         fd = tiling.X442(560, (0, 0, 0), (0, 0, 560), (560, 0, 0))
         self.base_kernel = tiling.SquareKernel(1, (0, 0), fd)
         self.frustum = scene_parsing.make_frustum("test_xml/camera.xml")
