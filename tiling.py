@@ -102,55 +102,65 @@ class PlanarReflectionGroup(object):
         outer_edges.pop(min_angle_edge_index)
         outer_edges.pop((min_angle_edge_index - 1) % len(self._vertices))
 
-        outer_directions = []
+        self._translational_fd_edges = []
         for tx in self._dihedral_transforms:
             for e in outer_edges:
                 v1, v2 = np.dot(tx, self._vertices[e[0]]), np.dot(tx, self._vertices[e[1]])
-                outer_directions.append((v1, v2))
+                self._translational_fd_edges.append((v1, v2))
 
         i = 0
-        while i < len(outer_directions):
-            v1, v2 = outer_directions[i]
-            v3, v4 = outer_directions[(i+1) % len(outer_directions)]
+        while i < len(self._translational_fd_edges):
+            v1, v2 = self._translational_fd_edges[i]
+            v3, v4 = self._translational_fd_edges[(i+1) % len(self._translational_fd_edges)]
             if np.linalg.matrix_rank(np.column_stack((v2-v1, v4-v3)), tol=EPSILON) == 1:
                 if np.allclose(v2, v4):
-                    outer_directions[i] = (v1, v3)
-                    outer_directions.pop((i+1) % len(outer_directions))
+                    self._translational_fd_edges[i] = (v1, v3)
+                    self._translational_fd_edges.pop((i+1) % len(self._translational_fd_edges))
                 elif np.allclose(v1, v3):
-                    outer_directions[i] = (v2, v4)
-                    outer_directions.pop((i+1) % len(outer_directions))
+                    self._translational_fd_edges[i] = (v2, v4)
+                    self._translational_fd_edges.pop((i+1) % len(self._translational_fd_edges))
                 else:
                     assert False, "Bad case!"
             i += 1
 
         # Due to the dihedral symmetry, we know half the outer edges are just reflected copies of the other half
         # so we can delete them to get the set of edges whose normals form the basis
-        outer_directions = outer_directions[0:len(outer_directions)/2]
-        self._translational_basis = [0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index] for e in outer_directions]
+        self._translational_fd_vertices = [e[0] for e in self._translational_fd_edges]
+
+        basis_edges = self._translational_fd_edges[0:len(self._translational_fd_edges)/2]
+        self._translational_basis = \
+            [2.0*(0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index]) for e in basis_edges]
 
     @property
     def n(self):
         return self._two_n / 2
 
     @property
-    def transformations(self):
+    def dihedral_subgroup(self):
         return self._dihedral_transforms
 
     @property
     def translational_subgroup_basis(self):
         if (self._two_n / 2) not in (1, 2, 4, 3, 6):
             raise ValueError("Dihedral group of order %d does not have a translational subgroup" % self._two_n)
-
         return self._translational_basis
 
     @property
-    def vertices(self):
+    def fd_vertices(self):
         return self._vertices
 
     @property
-    def mirror_edges(self):
+    def fd_edges(self):
         return self._mirror_edges
 
+    @property
+    def translational_fd_vertices(self):
+        return self._translational_fd_vertices
+
+    @property
+    def translational_fd_edges(self):
+        return self._translational_fd_edges
+        
     @property
     def height(self):
         return self._height
@@ -162,198 +172,14 @@ class PlanarReflectionGroup(object):
     @property
     def mirror_planes(self):
         return self._mirror_planes
-
-
-def dihedral_group(plane1, plane2):
-    angle = np.abs(np.pi - np.arccos(np.dot(plane1.normal, plane2.normal)))
-    n = (2.0*np.pi) / angle
-
-    if np.abs(np.round(n) - n) > EPSILON:
-        raise ValueError("Reflection planes in dihedral group must have internal angle which is an integer divisor of "
-                         "two pi. Got %f which divides two pi into %f." % (angle, n))
-
-    n = int(n)
-    last_transform = np.identity(4)
-    last_coord = np.zeros(n/2)
-
-    for i in range(n):
-        yield last_coord, last_transform
-
-        p = copy.deepcopy([plane1, plane2][i % 2])
-        p.transform(last_transform)
-        last_transform = np.dot(utils.reflection_matrix(p), last_transform)
-        last_coord[i % (n / 2)] = 1 if last_coord[i % (n / 2)] == 0 else 0
-
-
-class ReflectionOrbifold(object):
-    def __init__(self, height, vertices, mirror_edges):
-        """
-        Create a generic reflection group with a fundamental domain whose corners are specified in order by vertices.
-        The mirrors will consist of the edges in mirror_edges which are specified as integer indexes in the range
-        [0, len(vertices)] and edge i has end vertices i and i+1 mod len(vertices).
-
-        :param vertices: The vertices of the fundamental domain
-        :param mirror_edges: The edges of the fundamental domain
-
-        """
-
-        vs = [np.array((v[0], 0.0, v[1])) if len(v) == 2 else v for v in vertices]
-        vs = [utils.make_projective_point(v) for v in vs]
-
-        if not utils.coplanar(*vs):
-            raise ValueError("Cannot construct a kaleidoscope from non-coplanar vertices")
-
-        self._height = height
-        self._ground_plane = shapes.Plane(vs[0], vs[1], vs[2])
-        self._mirror_edges = []
-        self._mirror_planes = []
-        self._mirror_transforms = []
-
-        for e in mirror_edges:
-            v1, v2 = vs[e], vs[(e + 1) % len(vs)]
-            vup = vs[e] + self._ground_plane.normal
-            self._mirror_edges.append((e, e + 1 % len(vs)))
-            self._mirror_planes.append(shapes.Plane(v1, v2, vup))
-            self._mirror_transforms.append(utils.reflection_matrix(self._mirror_planes[-1]))
-        self._vertices = vs
-
-        min_angle = np.pi * 2.0
-        min_i = 0
-        for i in range(len(self.vertices)):
-            prv_i = (i - 1) % len(self._vertices)
-            nxt_i = (i + 1) % len(self._vertices)
-            prv = self._vertices[prv_i]
-            cur = self._vertices[i]
-            nxt = self._vertices[nxt_i]
-
-            cos_angle = np.dot(prv - cur, nxt - cur) / (np.linalg.norm(prv-cur) * np.linalg.norm(nxt-cur))
-            min_angle = min(min_angle, np.arccos(cos_angle) % (2.0 * np.pi))
-            min_i = i
-
-        dihedral_planes = self.mirror_planes[(min_i - 1) % len(self._vertices)], self.mirror_planes[min_i]
-        other_planes = copy.deepcopy(self.mirror_planes)
-        other_planes.pop(min_i)
-        other_planes.pop((min_i - 1) % len(self._vertices))
-
-        # dihedral_grp = list(dihedral_group(*dihedral_planes))
-        # for c, _ in dihedral_grp:
-        #     print _
-
-    @property
-    def vertices(self):
-        return self._vertices
-
-    @property
-    def mirror_edges(self):
-        return self._mirror_edges
-
-    @property
-    def mirror_planes(self):
-        return self._mirror_planes
-
-    @property
-    def mirror_transforms(self):
-        return self._mirror_transforms
-
-    @property
-    def ground_plane(self):
-        return self._ground_plane
-
-    @property
-    def height(self):
-        return self._height
-
-
-class X2222(ReflectionOrbifold):
-    def __init__(self, h, v1, v2, v3, v4):
-        super(X2222, self).__init__(h, (v1, v2, v3, v4), (0, 1, 2, 3))
-
-        for i in range(len(self._vertices)):
-            prv = self._vertices[(i - 1) % len(self._vertices)]
-            cur = self._vertices[i]
-            nxt = self._vertices[(i + 1) % len(self._vertices)]
-
-            cos_angle = np.dot(prv - cur, nxt - cur)
-            if cos_angle != 0.0:
-                raise ValueError("*2222 Orbifold vertices must form a rectangle. Got inner angle between vertices "
-                                 "%s, %s, %s = %f degrees"
-                                 % (str(prv), str(nxt), str(cur), np.degrees(np.arccos(cos_angle))))
-
-        w = np.linalg.norm(self.vertices[1] - self.vertices[0])
-        d = np.linalg.norm(self.vertices[2] - self.vertices[1])
-
-        self.scale = np.array((w, d))
-        self._real_basis = np.array((self.mirror_planes[0].normal * w * 2, self.mirror_planes[1].normal * d * 2))
-
-    @property
-    def translational_basis(self):
-        return self._real_basis
-
-    def translational_fds(self, translational_lattice_coord):
-        reflect1 = utils.reflection_matrix(self.mirror_planes[0])
-        reflect2 = utils.reflection_matrix(self.mirror_planes[1])
-        base = X2222.translational_lattice_to_lattice(translational_lattice_coord)
-        return [(np.array((0, 0)) + base, np.identity(4)),
-                (np.array((1, 0)) + base, reflect1),
-                (np.array((1, 1)) + base, np.dot(reflect2, reflect1)),
-                (np.array((0, 1)) + base, reflect2)]
-
-    @staticmethod
-    def translational_lattice_to_lattice(tx_lattice):
-        utils.verify_matrix_shape(tx_lattice, 2)
-        return np.array(tx_lattice) * 2.0
-
-
-class X442(ReflectionOrbifold):
-    def __init__(self, h, v1, v2, v3):
-        super(X442, self).__init__(h, (v1, v2, v3), (0, 1, 2))
-
-        self._real_basis = None
-
-        for i in range(len(self._vertices)):
-            prv_i = (i - 1) % len(self._vertices)
-            nxt_i = (i + 1) % len(self._vertices)
-            prv = self._vertices[prv_i]
-            cur = self._vertices[i]
-            nxt = self._vertices[nxt_i]
-
-            cos_angle = np.dot(prv - cur, nxt - cur) / (np.linalg.norm(prv-cur) * np.linalg.norm(nxt-cur))
-
-            if abs(cos_angle) < EPSILON:
-                if self._real_basis:
-                    raise ValueError("*442 Orbifold vertices must form a right angle isoceles triangle. "
-                                     "Got inner angle between vertices " "%s, %s, %s = %f degrees" %
-                                     (str(prv), str(nxt), str(cur), np.degrees(np.arccos(cos_angle))))
-                w = np.linalg.norm(prv - cur)
-                d = np.linalg.norm(nxt - cur)
-                self._real_basis = np.array((self.mirror_planes[i].normal * w * 2,
-                                             self.mirror_planes[prv_i].normal * d * 2))
-                self.scale = np.array((w, d))
-                self._hypoteneuse = nxt_i
-            elif abs(np.arccos(cos_angle) - np.pi/4.0) > EPSILON:
-                raise ValueError("*442 Orbifold vertices must form a right angle isoceles triangle. "
-                                 "Got inner angle between vertices " "%s, %s, %s = %f degrees" %
-                                 (str(prv), str(nxt), str(cur), np.degrees(np.arccos(cos_angle))))
-
-    @property
-    def translational_basis(self):
-        return self._real_basis
-
-    def translational_fds(self, translational_lattice_coord):
-        p1, p2 = self.mirror_planes[self._hypoteneuse], self.mirror_planes[(self._hypoteneuse + 1) % len(self.vertices)]
-        base = X442.translational_lattice_to_lattice(translational_lattice_coord)
-        return [(coord + base, tx)for coord, tx in dihedral_group(p1, p2)]
-
-    @staticmethod
-    def translational_lattice_to_lattice(tx_lattice):
-        # TODO: How to generate this automatically?
-        utils.verify_matrix_shape(tx_lattice, 2)
-        return tx_lattice[0] * np.array((2, 1, 0, -1)) + tx_lattice[1] * np.array((0, 1, 2, 1))
 
 
 class SquareKernel:
-    def __init__(self, radius, center, fundamental_domain):
-        self._fd = fundamental_domain
+    def __init__(self, radius, center, group):
+        if group.n not in [2, 4]:
+            raise ValueError("Cannot construct a square kernel from planar group with dihedral "
+                             "subgroup of order not 2 or 4")
+        self._group = group
         self._radius = radius
         self._diameter = 2 * radius + 1
         self._center = np.array(center)
@@ -364,21 +190,31 @@ class SquareKernel:
     def adjacent_kernels(self, overlap):
         for direction in (1, 0), (1, 0), (-1, 0), (0, -1):
             new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
-            yield SquareKernel(self._radius, new_ctr, self._fd)
+            yield SquareKernel(self._radius, new_ctr, self._group)
 
     @property
     def fundamental_domains(self):
+        for pos, translate, _ in self.translational_fundamental_domains:
+            print translate
+            for k in range(len(self._group.dihedral_subgroup)):
+                reflect = self._group.dihedral_subgroup[k]
+                translate = np.dot(translate, reflect)
+                prism = shapes.Prism(self._group.height, *self._group.fd_vertices)
+                prism.transform(translate)
+                yield (pos, k), translate, prism
+
+    @property
+    def translational_fundamental_domains(self):
         for i in range(self._diameter):
             for j in range(self._diameter):
                 pos = np.array((i - self._radius, j - self._radius)) + np.array(self._center)
                 translate = utils.translation_matrix(
-                    pos[0] * self._fd.translational_basis[0] + pos[1] * self._fd.translational_basis[1])
+                    pos[0] * self._group.translational_subgroup_basis[0] +
+                    pos[1] * self._group.translational_subgroup_basis[1])
 
-                for coord, fd_tx in self._fd.translational_fds(pos):
-                    tx = np.dot(translate, fd_tx)
-                    prism = shapes.Prism(self._fd.height, *self._fd.vertices)
-                    prism.transform(tx)
-                    yield coord, tx, prism
+                prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+                prism.transform(translate)
+                yield pos, translate, prism
 
     @property
     def center(self):
@@ -509,7 +345,7 @@ class KernelTiling:
             else:
                 visited[str(next_kernel.center)] = True
 
-            for i, tx, fd in next_kernel.fundamental_domains:
+            for i, tx, fd in next_kernel.translational_fundamental_domains:
                 if shapes.intersects(self.frustum, fd):
                     self._add_kernel_rec(next_kernel, visited)
                     break
