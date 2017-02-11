@@ -1,5 +1,5 @@
 import numpy as np
-from multimethods import multimethod
+# from multimethods import multimethod
 
 import utils
 
@@ -18,10 +18,13 @@ class Plane(object):
         p1 = utils.make_projective_point(p1)
         p2 = utils.make_projective_point(p2)
 
-        v1 = (p1 - p0)[:3]
+        v1 = (p0 - p1)[:3]
         v2 = (p2 - p1)[:3]
         n = np.cross(v1, v2)
-        n /= -np.linalg.norm(n)
+        nlen = np.linalg.norm(n)
+        if abs(nlen) < EPSILON:
+            raise ValueError("Cannot construct plane from co-linear points")
+        n /= nlen
         self._normal = utils.make_projective_vector(n)
         self._position = utils.make_projective_point(p1)
 
@@ -134,7 +137,7 @@ class Prism(Polyhedron):
             self._vertices.append(pt)
 
         self._faces = [tuple([i for i in range(len(self._vertices))])]
-        self._planes = [Plane(self._vertices[0], self._vertices[1], self._vertices[2])]  # The base plane
+        self._planes = [Plane(self._vertices[2], self._vertices[1], self._vertices[0])]  # The base plane
         self._edges = []
 
         base_degree = len(self._vertices)
@@ -155,12 +158,12 @@ class Prism(Polyhedron):
             v2 = nxt - cur
             v2 /= np.linalg.norm(v2)
 
-            if np.dot(np.cross(v1[:3], v2[:3]), self._planes[0].normal3) < 0:
+            if np.dot(np.cross(v2[:3], v1[:3]), self._planes[0].normal3) < 0:
                 raise ValueError("Prism base polygon is not convex")
 
-            self._vertices.append(cur + h * -self._planes[0].normal)
+            self._vertices.append(cur - h * self._planes[0].normal)
             self._faces.append((i, prv_i, prv_i+base_degree, i+base_degree))
-            self._planes.append(Plane(self._vertices[-1], cur, prv))
+            self._planes.append(Plane(prv, cur, self._vertices[-1]))
             self._edges.append((i, nxt_i))
             self._edges.append((i, i + base_degree))
             self._edges.append((i + base_degree, nxt_i + base_degree))
@@ -168,7 +171,7 @@ class Prism(Polyhedron):
         self._num_vertices = len(self._vertices)
         self._num_edges = len(self._edges)
 
-        self._planes.append(Plane(self._vertices[-1], self._vertices[-2], self._vertices[-3]))
+        self._planes.append(Plane(self._vertices[-3], self._vertices[-2], self._vertices[-1]))
         self._faces.append(tuple([self._num_vertices - 1 - i for i in range(self._num_vertices - base_degree)]))
         self._num_faces = len(self._faces)
 
@@ -391,7 +394,7 @@ class AABB(Prism):
             self._vertices[i] = tx.dot(self._vertices[i])
 
 
-@multimethod(Polyhedron, Polyhedron)
+# @multimethod(Polyhedron, Polyhedron)
 def intersects(obj1, obj2):
     """
     Test if two convex solids intersect.

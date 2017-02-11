@@ -109,6 +109,13 @@ class GLWidget(QtOpenGL.QGLWidget):
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color)
             gl_geometry.draw_solid_prism(t[0])
 
+            glDisable(GL_DEPTH_TEST)
+            glDisable(GL_LIGHTING)
+            glColor3f(1, 1, 1)
+            gl_geometry.draw_prism_normals(t[0], 100.0)
+            glEnable(GL_DEPTH_TEST)
+            glEnable(GL_LIGHTING)
+
         glDisable(GL_DEPTH_TEST)
         glDisable(GL_LIGHTING)
         glColor3f(1, 1, 1)

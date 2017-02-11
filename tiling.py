@@ -18,6 +18,7 @@ class PlanarReflectionGroup(object):
         transformations in the dihedral subgroup.
 
         :param vertices: The vertices of the fundamental domain.
+        :param height: The height of the fundamental domain
         """
 
         #
