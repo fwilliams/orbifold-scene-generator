@@ -8,6 +8,7 @@ import scene_parsing
 import tiling
 from skybox import Skybox
 from visualiser import gl_geometry
+from geometry import shapes
 
 try:
     from OpenGL.GL import *
@@ -44,10 +45,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.setMouseTracking(True)
         self.elapsed = 0.0
 
-        prg = tiling.PlanarReflectionGroup(560, (0, 0, 0), (0, 0, 560), (560, 0, 0))
-        self.base_kernel = tiling.SquareKernel(0, (0, 0), prg)
+        self.prg = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (0, 0, 560))
+        self.base_kernel = tiling.SquareKernel(1, (0, 0), self.prg)
         self.frustum = scene_parsing.make_frustum("test_xml/camera.xml")
-        self.kt = tiling.KernelTiling(self.base_kernel, self.frustum, 1)
+        self.kt = tiling.KernelTiling(self.base_kernel, self.frustum, 0)
 
         self.camera_controller = camera_control.ArcballCameraController((0, 0, 0), 7000)
         self.skybox = Skybox(bottom_color=(0.1, 0.1, 0.5), top_color=(0.5, 0.5, 0.9))
@@ -86,17 +87,16 @@ class GLWidget(QtOpenGL.QGLWidget):
         print "Generating geometry..."
 
         tilemap = dict()
-        for k in [self.base_kernel]: #self.kt.visible_kernels:
+        for k in self.kt.visible_kernels:
             color = np.random.rand(4)
             color[3] = 1.0
 
-            for index, f, p in k.fundamental_domains:
+            for index, f, p in k.translational_fundamental_domains:
                 if str(index) in tilemap:
                     tilemap[str(index)][2] += 1
                 else:
                     tilemap[str(index)] = [p, f, 1]
 
-        print tilemap.keys()
         self.geometry_display_list = glGenLists(1)
         glNewList(self.geometry_display_list, GL_COMPILE)
         glPushAttrib(GL_ENABLE_BIT)
@@ -132,6 +132,12 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.skybox.draw(self.camera_controller.camera_rotation.transpose(), 8000)
 
         glCallList(self.geometry_display_list)
+
+        # for tx in self.prg.dihedral_subgroup:
+        #     p = shapes.Prism(self.prg.height, *self.prg.fd_vertices)
+        #     p.transform(tx)
+        #     glColor3f(1, 1, 1)
+        #     gl_geometry.draw_wire_prism(p)
 
         glPushAttrib(GL_ENABLE_BIT)
         glDisable(GL_DEPTH_TEST)

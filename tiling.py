@@ -195,13 +195,11 @@ class SquareKernel:
     @property
     def fundamental_domains(self):
         for pos, translate, _ in self.translational_fundamental_domains:
-            print translate
             for k in range(len(self._group.dihedral_subgroup)):
-                reflect = self._group.dihedral_subgroup[k]
-                translate = np.dot(translate, reflect)
+                transform = np.dot(translate, self._group.dihedral_subgroup[k])
                 prism = shapes.Prism(self._group.height, *self._group.fd_vertices)
-                prism.transform(translate)
-                yield (pos, k), translate, prism
+                prism.transform(transform)
+                yield (pos, k), transform, prism
 
     @property
     def translational_fundamental_domains(self):
@@ -213,6 +211,9 @@ class SquareKernel:
                     pos[1] * self._group.translational_subgroup_basis[1])
 
                 prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+
+                print self._group.translational_fd_vertices
+
                 prism.transform(translate)
                 yield pos, translate, prism
 
@@ -343,9 +344,10 @@ class KernelTiling:
             if str(next_kernel.center) in visited:
                 continue
             else:
+                print str(next_kernel.center)
                 visited[str(next_kernel.center)] = True
 
-            for i, tx, fd in next_kernel.translational_fundamental_domains:
-                if shapes.intersects(self.frustum, fd):
+            for _, tx, prism in next_kernel.translational_fundamental_domains:
+                if shapes.intersects(self.frustum, prism):
                     self._add_kernel_rec(next_kernel, visited)
                     break
