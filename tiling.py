@@ -81,8 +81,8 @@ class PlanarReflectionGroup(object):
             raise ValueError(
                 "Reflection planes in dihedral group must have internal angle which is an integer divisor of "
                 "two pi. Got %f which divides two pi into %f." % (angle, self._two_n))
-        self._two_n = int(self._two_n)
 
+        self._two_n = int(np.round(self._two_n))
         #
         # Compute the transformations of each element in the dihedral subgroup
         #
@@ -213,8 +213,6 @@ class SquareKernel:
 
                 prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
 
-                print self._group.translational_fd_vertices
-
                 prism.transform(translate)
                 yield pos, translate, prism
 
@@ -222,6 +220,72 @@ class SquareKernel:
     def center(self):
         return self._center
 
+
+class HexKernel:
+    def __init__(self, radius, center, group):
+        if group.n not in [3, 6]:
+            raise ValueError("Cannot construct a hex kernel from planar group with dihedral "
+                             "subgroup of order not 3 or 6. Got group of order %d" % group.n)
+        self._group = group
+        self._radius = radius
+        self._diameter = 2 * radius + 1
+        self._center = np.array(center)
+
+    def __str__(self):
+        return "Square Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
+
+    def adjacent_kernels(self, overlap):
+        directions = (0, 1, 0), (1, 0, 0), (0, 0, -1), (0, -1, 0), (-1, 0, 0), (0, 0, 1)  #((-1, 1, 0), (-1, 0, 1), (0, -1, 1), (1, -1, 0), (1, 0, -1), (0, 1, -1))
+        for i in range(len(directions)):
+            cur_dir = directions[i]
+            nxt_dir = np.array(directions[(i + 1) % len(directions)])
+            new_ctr = np.array(self._center) + np.array(cur_dir) * (self._radius + 1 - overlap) + nxt_dir*self._radius
+            yield HexKernel(self._radius, new_ctr, self._group)
+
+    @property
+    def fundamental_domains(self):
+        for pos, translate, _ in self.translational_fundamental_domains:
+            for k in range(len(self._group.dihedral_subgroup)):
+                transform = np.dot(translate, self._group.dihedral_subgroup[k])
+                prism = shapes.Prism(self._group.height, *self._group.fd_vertices)
+                prism.transform(transform)
+                yield (pos, k), transform, prism
+
+    @property
+    def translational_fundamental_domains(self):
+        for i in range(-self._radius, 0):
+            sign = i/abs(i) if i != 0 else 0
+            for j in range(-self._radius+sign*i, self._radius+1):
+                translate = np.array((0.0, 0.0, 0.0, 0.0))
+                for c in range(len(self._center)):
+                    translate += self._group.translational_subgroup_basis[c] * self._center[c]
+
+                translate += i * self._group.translational_subgroup_basis[0] + \
+                             j * self._group.translational_subgroup_basis[1]
+
+                transform = utils.translation_matrix(translate)
+                prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+                prism.transform(transform)
+                yield (self._center[0]+i, self._center[1]+j, self._center[2]), transform, prism
+
+        for i in range(0, self._radius+1):
+            sign = i/abs(i) if i != 0 else 0
+            for j in range(-self._radius, self._radius-sign*i+1):
+
+                translate = np.array((0.0, 0.0, 0.0, 0.0))
+                for c in range(len(self._center)):
+                    translate += self._group.translational_subgroup_basis[c] * self._center[c]
+
+                translate += i * self._group.translational_subgroup_basis[0] + \
+                             j * self._group.translational_subgroup_basis[1]
+                transform = utils.translation_matrix(translate)
+                prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+                prism.transform(transform)
+                yield (self._center[0]+i, self._center[1]+j, self._center[2]), transform, prism
+
+    @property
+    def center(self):
+        return self._center
 
 # TODO: Port to new framework
 class LineKernel:
@@ -268,7 +332,7 @@ class LineKernel:
 
 
 # TODO: Port to new framework
-class HexKernel:
+class HexKernel2:
     """
     A hexagonal kernel of hexagonal tiles. The radius specifies the number of tiles away from the center in every
     direction. The ctr parameter specifies the barycentric hex co-ordinate of the center tile.
@@ -345,7 +409,6 @@ class KernelTiling:
             if str(next_kernel.center) in visited:
                 continue
             else:
-                print str(next_kernel.center)
                 visited[str(next_kernel.center)] = True
 
             for _, tx, prism in next_kernel.translational_fundamental_domains:

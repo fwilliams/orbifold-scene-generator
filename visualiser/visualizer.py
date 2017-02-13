@@ -45,11 +45,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.setMouseTracking(True)
         self.elapsed = 0.0
 
-        self.prg = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (0, 0, 560))
-        self.base_kernel = tiling.SquareKernel(1, (0, 0), self.prg)
+        self.prg = tiling.PlanarReflectionGroup(560, (280, 0, 0), (560, 0, 0), (280, 0, 560*np.sqrt(3.0)/2.0))
+        self.base_kernel = tiling.HexKernel(1, (0, 0, 0), self.prg)
         self.frustum = scene_parsing.make_frustum("test_xml/camera.xml")
-        self.kt = tiling.KernelTiling(self.base_kernel, self.frustum, 0)
-
+        # self.kt = tiling.KernelTiling(self.base_kernel, self.frustum, 0)
+        # print self.kt.visible_kernels
         self.camera_controller = camera_control.ArcballCameraController((0, 0, 0), 7000)
         self.skybox = Skybox(bottom_color=(0.1, 0.1, 0.5), top_color=(0.5, 0.5, 0.9))
         self.installEventFilter(self.camera_controller)
@@ -87,7 +87,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         print "Generating geometry..."
 
         tilemap = dict()
-        for k in self.kt.visible_kernels:
+        for k in self.base_kernel.adjacent_kernels(0): #self.kt.visible_kernels:
+            print k.center
             color = np.random.rand(4)
             color[3] = 1.0
 
