@@ -46,7 +46,7 @@ class PlanarReflectionGroup(object):
         for e in range(len(vertices)):
             v1, v2 = vs[e], vs[(e + 1) % len(vs)]
             vup = vs[e] + self._ground_plane.normal
-            self._mirror_edges.append((e, e + 1 % len(vs)))
+            self._mirror_edges.append((e, (e + 1) % len(vs)))
             self._mirror_planes.append(shapes.Plane(v1, v2, vup))
 
         #
@@ -65,8 +65,10 @@ class PlanarReflectionGroup(object):
             nxt = self._vertices[nxt_i]
 
             cos_angle = np.dot(prv - cur, nxt - cur) / (np.linalg.norm(prv-cur) * np.linalg.norm(nxt-cur))
-            min_angle = min(min_angle, np.arccos(cos_angle) % (2.0 * np.pi))
-            min_angle_edge_index = i
+            angle = np.arccos(cos_angle) % (2.0 * np.pi)
+            if angle < min_angle:
+                min_angle = angle  # min(min_angle, np.arccos(cos_angle) % (2.0 * np.pi))
+                min_angle_edge_index = i
 
         plane1_index, plane2_index = (min_angle_edge_index - 1) % len(self._vertices), min_angle_edge_index
         plane1, plane2 = self._mirror_planes[plane1_index], self._mirror_planes[plane2_index]
@@ -81,7 +83,6 @@ class PlanarReflectionGroup(object):
             raise ValueError(
                 "Reflection planes in dihedral group must have internal angle which is an integer divisor of "
                 "two pi. Got %f which divides two pi into %f." % (angle, self._two_n))
-
         self._two_n = int(np.round(self._two_n))
         #
         # Compute the transformations of each element in the dihedral subgroup
@@ -101,11 +102,15 @@ class PlanarReflectionGroup(object):
         #
         outer_edges = copy.deepcopy(self._mirror_edges)
         outer_edges.pop(min_angle_edge_index)
-        outer_edges.pop((min_angle_edge_index - 1) % len(self._vertices))
+        outer_edges.pop((min_angle_edge_index - 1) % len(outer_edges))
 
         self._translational_fd_edges = []
-        for tx in self._dihedral_transforms:
-            for e in outer_edges:
+        for i in range(len(self._dihedral_transforms)):
+            tx = self._dihedral_transforms[i]
+            for j in range(len(outer_edges)):
+                # This handles the case where there are 2 outer edges
+                index = ((i % len(outer_edges)) + j) % len(outer_edges)
+                e = outer_edges[index]
                 v1, v2 = np.dot(tx, self._vertices[e[0]]), np.dot(tx, self._vertices[e[1]])
                 self._translational_fd_edges.append((v1, v2))
 
@@ -189,7 +194,7 @@ class SquareKernel:
         return "Square Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
-        for direction in (1, 0), (1, 0), (-1, 0), (0, -1):
+        for direction in (1, 0), (0, 1), (-1, 0), (0, -1):
             new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
             yield SquareKernel(self._radius, new_ctr, self._group)
 
@@ -410,7 +415,6 @@ class KernelTiling:
                 continue
             else:
                 visited[str(next_kernel.center)] = True
-
             for _, tx, prism in next_kernel.translational_fundamental_domains:
                 if shapes.intersects(self.frustum, prism):
                     self._add_kernel_rec(next_kernel, visited)
