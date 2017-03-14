@@ -273,95 +273,6 @@ class HexKernel:
     def center(self):
         return self._center
 
-# TODO: Port to new framework
-class LineKernel:
-    def __init__(self, radius, fd_scale=np.array((1, 1, 1)), fd_ctr=np.array((0, 0, 0))):
-        self._radius = radius
-        self._diameter = 2 * radius + 1
-        self._fd_center = np.array(fd_ctr)
-        self._fd_scale = np.array(fd_scale)
-        self._directions = (np.array((0, 0, 1)), np.array((0, 0, -1)))
-
-    def __str__(self):
-        return "Line Kernel: size = %d with center at %s" % (self._diameter, str(self._fd_center))
-
-    def adjacent_kernels(self, overlap):
-        for direction in self._directions:
-            new_ctr = self._fd_center + direction * (self._diameter - overlap) * self._fd_scale
-            yield LineKernel(self._radius, fd_scale=self._fd_scale, fd_ctr=new_ctr)
-
-    @property
-    def fundamental_domains(self):
-        for i in range(2*self._diameter):
-            x = i - self.radius*2
-            if i % 2 != 0:
-                p1 = self._fd_center
-                p2 = p1 + np.array((self._fd_scale[0], 0, 0))
-                p3 = p1 + np.array((0, self._fd_scale[1], 0))
-                plane = shapes.Plane(p1, p2, p3)
-
-                tx = utils.translation_matrix(self._fd_center - x * self._directions[0] * self._fd_scale)
-                tx = np.dot(tx, utils.reflection_matrix(plane))
-            else:
-                tx = utils.translation_matrix(self._fd_center - x * self._directions[0] * self._fd_scale)
-            aabb = shapes.AABB(self._fd_center - self._fd_scale*0.5, self._fd_center + self._fd_scale*0.5)
-            aabb.transform(tx)
-            yield x, tx, aabb
-
-    @property
-    def radius(self):
-        return self._radius
-
-    @property
-    def center(self):
-        return self._fd_center
-
-
-# TODO: Port to new framework
-class HexKernel2:
-    """
-    A hexagonal kernel of hexagonal tiles. The radius specifies the number of tiles away from the center in every
-    direction. The ctr parameter specifies the barycentric hex co-ordinate of the center tile.
-    """
-    def __init__(self, radius, ctr):
-        self.radius = radius
-        self.diameter = 2 * radius + 1
-        self.center = ctr
-        # right, upright, upleft, left, downleft, downright
-        self.directions = ((-1, 1, 0), (-1, 0, 1), (0, -1, 1), (1, -1, 0), (1, 0, -1), (0, 1, -1))
-
-    def __str__(self):
-        return "Hex Kernel: radius of %d centered at %s" % (self.radius, str(self.center))
-
-    def adjacent_kernel(self, direction, overlap):
-        if direction not in self.directions:
-            raise RuntimeError("Invalid direction, %s, passed to Kernel.adjacent_kernel" % (str(direction)))
-        else:
-            dir_index = self.directions.index(direction)
-            next_dir = np.array(self.directions[(dir_index + 1) % len(self.directions)])
-            new_ctr = np.array(self.center) + np.array(direction) * (self.radius + 1 - overlap) + next_dir*self.radius
-            return HexKernel(self.radius, (new_ctr[0], new_ctr[1], new_ctr[2]))
-
-    def prism(self, scale_factor, trans_kernel_ctr):
-        # Use the 1st and 3rd co-ordinates as eisenstein integers. (https://en.wikipedia.org/wiki/Eisenstein_integer)
-        # Use these integers to compute the euclidean co-ordinates of the center of the tile
-        ni = np.array([0, 0, 1])
-        nj = np.array([-np.sqrt(3)/2, 0, 0.5])
-        euclidean_ctr = ni * self.center[2] + nj * self.center[0] + np.array(trans_kernel_ctr)
-
-        aabb_hw = 1 + 1.5 * self.radius
-        aabb_hh = (np.sqrt(3.0)/2.0) + self.radius * np.sqrt(3.0)
-
-        scale = np.array([scale_factor[0], scale_factor[1], scale_factor[0]])
-        bl = np.array([euclidean_ctr[0] - aabb_hw, -0.5,  euclidean_ctr[2] - aabb_hh]) * scale
-        tr = np.array([euclidean_ctr[0] + aabb_hw, 0.5, euclidean_ctr[2] + aabb_hh]) * scale
-
-        return shapes.AABB(bl, tr)
-
-
-class InvalidBaseKernelError(Exception):
-    pass
-
 
 class KernelTiling:
     """
@@ -380,8 +291,7 @@ class KernelTiling:
                 break
 
         if not found_isect:
-            raise InvalidBaseKernelError("Error: Base kernel for KernelTiling does "
-                                         "not intersect the specified frustum.")
+            raise ValueError("Error: Base kernel for KernelTiling does not intersect the specified frustum.")
         visited_dict = dict()
         visited_dict[str(base_kernel.center)] = True
         self._add_kernel_rec(base_kernel, visited_dict)
