@@ -1,6 +1,6 @@
 import numpy as np
-import scene_parsing
 import tiling
+import scene_parsing
 from visualiser import gl_geometry
 from visualiser.viewer import Viewer
 from OpenGL.GL import *
