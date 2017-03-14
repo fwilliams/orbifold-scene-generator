@@ -240,11 +240,10 @@ class HexKernel:
         return "Square Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
-        directions = (0, 1, 0), (1, 0, 0), (0, 0, -1), (0, -1, 0), (-1, 0, 0), (0, 0, 1)  #((-1, 1, 0), (-1, 0, 1), (0, -1, 1), (1, -1, 0), (1, 0, -1), (0, 1, -1))
+        directions = (1, 1), (-1, 2), (-2, 1), (-1, -1), (1, -2), (2, -1)
+        shifts = (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0)
         for i in range(len(directions)):
-            cur_dir = directions[i]
-            nxt_dir = np.array(directions[(i + 1) % len(directions)])
-            new_ctr = np.array(self._center) + np.array(cur_dir) * (self._radius + 1 - overlap) + nxt_dir*self._radius
+            new_ctr = self.center + np.array(directions[i])*self._radius + np.array(shifts[i])*(1-overlap)
             yield HexKernel(self._radius, new_ctr, self._group)
 
     @property
@@ -258,35 +257,17 @@ class HexKernel:
 
     @property
     def translational_fundamental_domains(self):
-        for i in range(-self._radius, 0):
-            sign = i/abs(i) if i != 0 else 0
-            for j in range(-self._radius+sign*i, self._radius+1):
-                translate = np.array((0.0, 0.0, 0.0, 0.0))
-                for c in range(len(self._center)):
-                    translate += self._group.translational_subgroup_basis[c] * self._center[c]
-
-                translate += i * self._group.translational_subgroup_basis[0] + \
-                             j * self._group.translational_subgroup_basis[1]
-
-                transform = utils.translation_matrix(translate)
+        for i in range(-self._radius, self._radius+1):
+            start = -self._radius if i >= 0 else -self._radius + abs(i)
+            end = self._radius if i <= 0 else self._radius - abs(i)
+            for j in range(start, end+1):
+                tx = (self._center[0] + i) * self._group.translational_subgroup_basis[0] + \
+                     (self._center[1] + j) * self._group.translational_subgroup_basis[1]
+                transform = utils.translation_matrix(tx)
                 prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
                 prism.transform(transform)
-                yield (self._center[0]+i, self._center[1]+j, self._center[2]), transform, prism
 
-        for i in range(0, self._radius+1):
-            sign = i/abs(i) if i != 0 else 0
-            for j in range(-self._radius, self._radius-sign*i+1):
-
-                translate = np.array((0.0, 0.0, 0.0, 0.0))
-                for c in range(len(self._center)):
-                    translate += self._group.translational_subgroup_basis[c] * self._center[c]
-
-                translate += i * self._group.translational_subgroup_basis[0] + \
-                             j * self._group.translational_subgroup_basis[1]
-                transform = utils.translation_matrix(translate)
-                prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
-                prism.transform(transform)
-                yield (self._center[0]+i, self._center[1]+j, self._center[2]), transform, prism
+                yield (self.center[0] + i, self.center[1] + j), transform, prism
 
     @property
     def center(self):

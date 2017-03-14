@@ -8,10 +8,10 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 
-group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (560, 0, 560), (0, 0, 560))
-base_kernel = tiling.SquareKernel(2, (0, 0), group)
-# group = tiling.PlanarReflectionGroup(560, (280, 0, 0), (560, 0, 0), (280, 0, 560 * np.sqrt(3.0) / 2.0))
-# base_kernel = tiling.HexKernel(1, (0, 0, 0), group)
+# group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (560, 0, 560), (0, 0, 560))
+# base_kernel = tiling.SquareKernel(2, (0, 0), group)
+group = tiling.PlanarReflectionGroup(560, (280, 0, 0), (560, 0, 0), (280, 0, 560 * np.sqrt(3.0) / 2.0))
+base_kernel = tiling.HexKernel(1, (0, 0), group)
 frustum = scene_parsing.make_frustum("test_xml/camera.xml")
 kt = tiling.KernelTiling(base_kernel, frustum, 1)
 geometry_display_list = None
@@ -42,9 +42,6 @@ def init(viewer):
 
     tilemap = dict()
     for k in kt.visible_kernels:
-        color = np.random.rand(4)
-        color[3] = 1.0
-
         for index, f, p in k.translational_fundamental_domains:
             if str(index) in tilemap:
                 tilemap[str(index)][2] += 1
@@ -57,11 +54,16 @@ def init(viewer):
     glPushAttrib(GL_ENABLE_BIT)
     glEnable(GL_LIGHTING)
     for t in tilemap.values():
-        if t[2] > 1:
-            color = np.array((0.9, 0.2, 0.2))
-        else:
+        if t[2] == 1:
             color = np.array((0.5, 0.5, 0.5))
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color)
+        elif t[2] == 2:
+            color = np.array((0.9, 0.9, 0.0))
+        elif t[2] == 3:
+            color = np.array((0.9, 0.7, 0.0))
+        else:
+            color = np.array((0.9, 0.1, 0.1))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0.7, 0.7, 0.7))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color)
         gl_geometry.draw_solid_prism(t[0])
 
         glDisable(GL_DEPTH_TEST)
