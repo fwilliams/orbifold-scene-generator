@@ -222,6 +222,16 @@ class SquareKernel:
                 yield pos, translate, prism
 
     @property
+    def translational_fundamental_domain_transforms(self):
+        for _, tx, _ in self.translational_fundamental_domains:
+            yield tx
+
+    @property
+    def fundamental_domain_transforms(self):
+        for _, tx, _ in self.fundamental_domains:
+            yield tx
+
+    @property
     def center(self):
         return self._center
 
@@ -268,6 +278,16 @@ class HexKernel:
                 prism.transform(transform)
 
                 yield (self.center[0] + i, self.center[1] + j), transform, prism
+
+    @property
+    def translational_fundamental_domain_transforms(self):
+        for _, tx, _ in self.translational_fundamental_domains:
+            yield tx
+
+    @property
+    def fundamental_domain_transforms(self):
+        for _, tx, _ in self.fundamental_domains:
+            yield tx
 
     @property
     def center(self):
