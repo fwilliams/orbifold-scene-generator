@@ -5,6 +5,19 @@ import numpy as np
 import utils
 
 
+def gen_scene_xml(xml_filename, __dbg=False):
+    def _dbg_print(*args):
+        if __dbg:
+            for i in args:
+                print('{}'.format(i), end=' ')
+            print("")
+
+    scene_doc = etree.parse(xml_filename)
+    root = scene_doc.getroot()
+
+    shapes = root.findall("shape")
+
+
 def make_frustum(xml_filename, __dbg=False):
     def _dbg_print(*args):
         if __dbg:

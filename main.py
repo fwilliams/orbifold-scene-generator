@@ -19,7 +19,7 @@ geometry_display_list = None
 
 def init(viewer):
     viewer.camera_controller.set_dist_from_center(5000)
-    viewer.camera_controller.set_zoom_speed(75)
+    viewer.camera_controller.set_zoom_speed(750)
 
     glutInit(len(sys.argv), sys.argv)
     glClearColor(0, 0, 0, 1.0)
@@ -27,7 +27,8 @@ def init(viewer):
     glEnable(GL_DEPTH_TEST)
 
     glMatrixMode(GL_PROJECTION)
-    gluPerspective(60, float(viewer.width()) / float(viewer.height()), 0.5, np.linalg.norm(frustum.far_plane.position)*5)
+    gluPerspective(60, float(viewer.width()) / float(viewer.height()),
+                   0.5, np.linalg.norm(frustum.far_plane.position)*5)
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -38,7 +39,7 @@ def init(viewer):
     glLightfv(GL_LIGHT0, GL_AMBIENT, (0.0, 0.0, 0.0, 1.0))
     glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.3, 0.3, 0.3, 1.0))
 
-    print "Generating geometry..."
+    print("Generating geometry...")
 
     tilemap = dict()
     for k in kt.visible_kernels:
@@ -82,7 +83,7 @@ def init(viewer):
     glPopAttrib(GL_ENABLE_BIT)
     glEndList()
 
-    print "Done generating geometry!"
+    print("Done generating geometry!")
 
 
 def draw(viewer):
@@ -109,7 +110,17 @@ def draw(viewer):
 
     glFinish()
 
+
+def resize(viewer):
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(60, float(viewer.width()) / float(viewer.height()),
+                   0.5, np.linalg.norm(frustum.far_plane.position)*5)
+    glMatrixMode(GL_MODELVIEW)
+
+
 gl_viewer = Viewer()
 gl_viewer.set_init_function(init)
 gl_viewer.set_draw_function(draw)
+gl_viewer.set_resize_function(resize)
 gl_viewer.run()
