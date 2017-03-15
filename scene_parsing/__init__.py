@@ -3,19 +3,45 @@ from lxml import etree
 from geometry import shapes
 import numpy as np
 import utils
+import copy
 
 
-def gen_scene_xml(xml_filename, __dbg=False):
-    def _dbg_print(*args):
-        if __dbg:
-            for i in args:
-                print('{}'.format(i), end=' ')
-            print("")
+def gen_scene_xml(xml_filename, tx_list):
+    def is_shapegroup(s):
+        return s.get("type") == "shapegroup"
 
     scene_doc = etree.parse(xml_filename)
     root = scene_doc.getroot()
 
-    shapes = root.findall("shape")
+    shape_nodes = root.findall("shape")
+    shape_nodes_copy = copy.deepcopy(shape_nodes)
+
+    for s in shape_nodes:
+        s.getparent().remove(s)
+
+    for s in shape_nodes_copy:
+        if is_shapegroup(s):
+            root.append(s)
+            continue
+
+        transform = copy.deepcopy(utils.find_unique(s, "transform", allow_zero=True))
+        for tx in tx_list:
+            new_shape = copy.deepcopy(s)
+            if transform:
+                new_transform = copy.deepcopy(transform)
+                new_shape.remove(utils.find_unique(new_shape, "transform", allow_zero=True))
+            else:
+                new_transform = etree.Element("transform", name="orbifold_generated")
+
+            tx_value = ""
+            for row in tx:
+                for val in row:
+                    tx_value += str(val) + " "
+            new_transform.append(etree.Element("matrix", value=tx_value))
+            new_shape.append(new_transform)
+            root.append(new_shape)
+
+    print(etree.tostring(root, pretty_print=True))
 
 
 def make_frustum(xml_filename, __dbg=False):
