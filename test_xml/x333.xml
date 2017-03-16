@@ -2,30 +2,8 @@
 
 <scene version="0.5.0">
     <!--<integrator type="path"/>-->
-
-    <!--<sensor type="perspective">-->
-    <!--<float name="farClip" value="10000"/>-->
-    <!--<float name="focusDistance" value="000"/>-->
-    <!--<float name="fov" value="75"/>-->
-    <!--<string name="fovAxis" value="x"/>-->
-    <!--<float name="nearClip" value="100"/>-->
-    <!--<transform name="toWorld">-->
-    <!--<lookat target="208, 240, 190" origin="148, 499, 490" up="0.0, 1.0, 0.0"/>-->
-    <!--</transform>-->
-
-    <!--<sampler type="independent">-->
-    <!--<integer name="sampleCount" value="128"/>-->
-    <!--</sampler>-->
-
-    <!--<film type="hdrfilm">-->
-    <!--<integer name="height" value="512"/>-->
-    <!--<integer name="width" value="512"/>-->
-
-    <!--<rfilter type="gaussian"/>-->
-    <!--</film>-->
-    <!--</sensor>-->
     <integrator type="opath">
-        <string name="otype" value="*2222"/>
+        <string name="otype" value="*333"/>
         <float name="r1" value="0.7"/>
         <float name="r2" value="0.7"/>
         <float name="r3" value="0.7"/>
@@ -92,12 +70,12 @@
     !-->
     <shape type="shapegroup" id="scene">
         <shape type="obj">
-            <string name="filename" value="meshes/cbox_floor.obj"/>
+            <string name="filename" value="meshes/cbox_floor_333.obj"/>
             <ref id="checker"/>
         </shape>
 
         <shape type="obj">
-            <string name="filename" value="meshes/cbox_ceiling.obj"/>
+            <string name="filename" value="meshes/cbox_ceiling_333.obj"/>
             <ref id="gray"/>
         </shape>
 
@@ -108,20 +86,24 @@
                 <string name="distribution" value="ggx"/>
                 <srgb name="diffuseReflectance" value="#303055"/>
             </bsdf>
+            <transform name="toWorld">
+                <scale value="0.55"/>
+                <translate x="120" y="0" z="95"/>
+            </transform>
         </shape>
 
         <shape type="sphere">
             <point name="center" x="0" y="0" z="0"/>
-            <float name="radius" value="1"/>
+            <float name="radius" value="0.5"/>
 
             <bsdf type="roughconductor">
                 <string name="distribution" value="ggx"/>
             </bsdf>
 
             <transform name="toWorld">
-                <translate x="0" y="1.0" z="0"/>
-                <scale x="100" y="100" z="100"/>
-                <translate x="375" y="0" z="300"/>
+                <translate x="0" y="0.5" z="0"/>
+                <scale x="120" y="120" z="120"/>
+                <translate x="300" y="0" z="70"/>
             </transform>
         </shape>
     </shape>

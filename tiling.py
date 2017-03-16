@@ -112,30 +112,25 @@ class PlanarReflectionGroup(object):
                 index = ((i % len(outer_edges)) + j) % len(outer_edges)
                 e = outer_edges[index]
                 v1, v2 = np.dot(tx, self._vertices[e[0]]), np.dot(tx, self._vertices[e[1]])
-                self._translational_fd_edges.append((v1, v2))
+                self._translational_fd_edges.append((v1, v2) if (i % 2) == 0 else (v2, v1))
 
         i = 0
         while i < len(self._translational_fd_edges):
             v1, v2 = self._translational_fd_edges[i]
             v3, v4 = self._translational_fd_edges[(i+1) % len(self._translational_fd_edges)]
             if np.linalg.matrix_rank(np.column_stack((v2-v1, v4-v3)), tol=EPSILON) == 1:
-                if np.allclose(v2, v4):
-                    self._translational_fd_edges[i] = (v1, v3)
-                    self._translational_fd_edges.pop((i+1) % len(self._translational_fd_edges))
-                elif np.allclose(v1, v3):
-                    self._translational_fd_edges[i] = (v2, v4)
-                    self._translational_fd_edges.pop((i+1) % len(self._translational_fd_edges))
-                else:
-                    assert False, "Bad case!"
+                assert np.allclose(v2, v3) and not np.allclose(v1, v4)
+                self._translational_fd_edges[i] = (v1, v4)
+                self._translational_fd_edges.pop((i+1) % len(self._translational_fd_edges))
             i += 1
 
         # Due to the dihedral symmetry, we know half the outer edges are just reflected copies of the other half
         # so we can delete them to get the set of edges whose normals form the basis
         self._translational_fd_vertices = [e[0] for e in self._translational_fd_edges]
-
         basis_edges = self._translational_fd_edges[0:len(self._translational_fd_edges)/2]
         self._translational_basis = \
             [2.0*(0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index]) for e in basis_edges]
+
 
     @property
     def n(self):

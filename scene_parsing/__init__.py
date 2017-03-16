@@ -27,11 +27,11 @@ def gen_scene_xml(xml_filename, tx_list):
         transform = copy.deepcopy(utils.find_unique(s, "transform", allow_zero=True))
         for tx in tx_list:
             new_shape = copy.deepcopy(s)
-            if transform:
+            if transform is not None:
                 new_transform = copy.deepcopy(transform)
                 new_shape.remove(utils.find_unique(new_shape, "transform", allow_zero=True))
             else:
-                new_transform = etree.Element("transform", name="orbifold_generated")
+                new_transform = etree.Element("transform", name="toWorld")
 
             tx_value = ""
             for row in tx:
@@ -41,7 +41,8 @@ def gen_scene_xml(xml_filename, tx_list):
             new_shape.append(new_transform)
             root.append(new_shape)
 
-    print(etree.tostring(root, pretty_print=True))
+    # print(etree.tostring(root, pretty_print=True))
+    return root
 
 
 def make_frustum(xml_filename, __dbg=False):

@@ -1,6 +1,8 @@
 import numpy as np
+import scene_parsing as sp
 import tiling
 import scene_parsing
+from lxml import etree
 from visualiser import gl_geometry
 from visualiser.viewer import Viewer
 from OpenGL.GL import *
@@ -8,13 +10,32 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 
-# group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (560, 0, 560), (0, 0, 560))
-# base_kernel = tiling.SquareKernel(2, (0, 0), group)
-group = tiling.PlanarReflectionGroup(560, (280, 0, 0), (560, 0, 0), (280, 0, 560 * np.sqrt(3.0) / 2.0))
-base_kernel = tiling.HexKernel(1, (0, 0), group)
-frustum = scene_parsing.make_frustum("test_xml/camera.xml")
-kt = tiling.KernelTiling(base_kernel, frustum, 1)
+mode = "333"
+kernel_rad = 2
+overlap = 0
+
+if mode == "2222":
+    # *2222
+    group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (560, 0, 560), (0, 0, 560))
+    base_kernel = tiling.SquareKernel(kernel_rad, (0, 0), group)
+elif mode == "632":
+    # *632
+    group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (280, 0, 0), (0, 0, 560 * np.sqrt(3.0) / 2.0))
+    base_kernel = tiling.HexKernel(kernel_rad, (0, 0), group)
+elif mode == "333":
+    # *333
+    group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (280, 0, 560 * np.sqrt(3.0) / 2.0))
+    base_kernel = tiling.HexKernel(kernel_rad, (0, 0), group)
+else:
+    assert False, "bad mode"
+
+frustum = scene_parsing.make_frustum("test_xml/x%s.xml" % mode)
+kt = tiling.KernelTiling(base_kernel, frustum, overlap)
 geometry_display_list = None
+
+scene_doc = sp.gen_scene_xml("test_xml/x%s.xml" % mode, list(base_kernel.fundamental_domain_transforms))
+with open("x2222_test.xml", "w+") as f:
+    f.write(etree.tostring(scene_doc, pretty_print=True))
 
 
 def init(viewer):
@@ -42,8 +63,8 @@ def init(viewer):
     print("Generating geometry...")
 
     tilemap = dict()
-    for k in kt.visible_kernels:
-        for index, f, p in k.translational_fundamental_domains:
+    for k in [base_kernel]:
+        for index, f, p in k.fundamental_domains:
             if str(index) in tilemap:
                 tilemap[str(index)][2] += 1
             else:
