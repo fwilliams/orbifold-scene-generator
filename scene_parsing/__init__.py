@@ -6,10 +6,18 @@ import utils
 import copy
 
 
-def gen_scene_xml(xml_filename, tx_list):
-    def is_shapegroup(s):
-        return s.get("type") == "shapegroup"
+def gen_depth_xml_from_scene(xml_doc):
+    doc = copy.deepcopy(xml_doc)
+    integrator = doc.find("integrator")
 
+    assert len(integrator) == 1, "Scene has more than one integrator, which is not supported."
+    doc.remove(integrator)
+    depth_integrator = etree.Element("integrator", type="depth")
+    doc.append(depth_integrator)
+    return doc
+
+
+def gen_incompleteness_xml(xml_filename, tx_list):
     scene_doc = etree.parse(xml_filename)
     root = scene_doc.getroot()
 
@@ -20,7 +28,52 @@ def gen_scene_xml(xml_filename, tx_list):
         s.getparent().remove(s)
 
     for s in shape_nodes_copy:
-        if is_shapegroup(s):
+        if s.get("type") == "shapegroup":
+            root.append(s)
+            continue
+
+        # if is emitter, strip the light source
+        if utils.find_unique(s, "emitter", allow_zero=True) is not None:
+            s.remove(utils.find_unique(s, "emitter"))
+
+        transform = copy.deepcopy(utils.find_unique(s, "transform", allow_zero=True))
+        for tx in tx_list:
+            new_shape = copy.deepcopy(s)
+            if transform is not None:
+                new_transform = copy.deepcopy(transform)
+                new_shape.remove(utils.find_unique(new_shape, "transform", allow_zero=True))
+            else:
+                new_transform = etree.Element("transform", name="toWorld")
+
+            tx_value = ""
+            for row in tx:
+                for val in row:
+                    tx_value += str(val) + " "
+            new_transform.append(etree.Element("matrix", value=tx_value))
+            new_shape.append(new_transform)
+            root.append(new_shape)
+
+    # print(etree.tostring(root, pretty_print=True))
+    emitter = etree.SubElement(root, "emitter", type="constant")
+    etree.SubElement(emitter, "rgb", name="radiance", value="#ffffff")
+
+    integrator = utils.find_unique(root, "integrator")
+    etree.SubElement(integrator, "boolean", name="incompleteness mode", value="true")
+    return root
+
+
+def gen_scene_xml(xml_filename, tx_list):
+    scene_doc = etree.parse(xml_filename)
+    root = scene_doc.getroot()
+
+    shape_nodes = root.findall("shape")
+    shape_nodes_copy = copy.deepcopy(shape_nodes)
+
+    for s in shape_nodes:
+        s.getparent().remove(s)
+
+    for s in shape_nodes_copy:
+        if s.get("type") == "shapegroup":
             root.append(s)
             continue
 

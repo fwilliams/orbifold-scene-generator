@@ -1,41 +1,15 @@
+import argparse
 import numpy as np
-import scene_parsing as sp
-import tiling
-import scene_parsing
-from lxml import etree
-from visualiser import gl_geometry
-from visualiser.viewer import Viewer
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-
-
-mode = "333"
-kernel_rad = 2
-overlap = 0
-
-if mode == "2222":
-    # *2222
-    group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (560, 0, 560), (0, 0, 560))
-    base_kernel = tiling.SquareKernel(kernel_rad, (0, 0), group)
-elif mode == "632":
-    # *632
-    group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (280, 0, 0), (0, 0, 560 * np.sqrt(3.0) / 2.0))
-    base_kernel = tiling.HexKernel(kernel_rad, (0, 0), group)
-elif mode == "333":
-    # *333
-    group = tiling.PlanarReflectionGroup(560, (0, 0, 0), (560, 0, 0), (280, 0, 560 * np.sqrt(3.0) / 2.0))
-    base_kernel = tiling.HexKernel(kernel_rad, (0, 0), group)
-else:
-    assert False, "bad mode"
-
-frustum = scene_parsing.make_frustum("test_xml/x%s.xml" % mode)
-kt = tiling.KernelTiling(base_kernel, frustum, overlap)
-geometry_display_list = None
-
-scene_doc = sp.gen_scene_xml("test_xml/x%s.xml" % mode, list(base_kernel.fundamental_domain_transforms))
-with open("x2222_test.xml", "w+") as f:
-    f.write(etree.tostring(scene_doc, pretty_print=True))
+from lxml import etree
+import scene_parsing
+import scene_parsing as sp
+import tiling
+import time
+from visualiser import gl_geometry
+from visualiser.viewer import Viewer
 
 
 def init(viewer):
@@ -63,7 +37,7 @@ def init(viewer):
     print("Generating geometry...")
 
     tilemap = dict()
-    for k in [base_kernel]:
+    for k in kt.visible_kernels:
         for index, f, p in k.fundamental_domains:
             if str(index) in tilemap:
                 tilemap[str(index)][2] += 1
@@ -139,9 +113,79 @@ def resize(viewer):
                    0.5, np.linalg.norm(frustum.far_plane.position)*5)
     glMatrixMode(GL_MODELVIEW)
 
+argparser = argparse.ArgumentParser()
+argparser.add_argument("file", "The name of the scene file to render.", type=str)
+argparser.add_argument("-t", "--type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
+                                            "where N is a positive integer.")
+argparser.add_argument("-r", "--radius", help="The kernel radius", type=int)
+argparser.add_argument("-s", "--args.scale", help="args.scale factor for the scene.", type=float)
+argparser.add_argument("-o", "--overlap", help="The amout that adjacent kernels overlap")
+argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
+args = argparser.parse_args()
 
-gl_viewer = Viewer()
-gl_viewer.set_init_function(init)
-gl_viewer.set_draw_function(draw)
-gl_viewer.set_resize_function(resize)
-gl_viewer.run()
+
+if args.type == "xx":
+    group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
+                                        (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
+    base_kernel = tiling.LineKernel(args.radius, 0, group)
+elif args.type == "2222":
+    # *2222
+    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
+                                         (args.scale, 0, 0), (args.scale, 0, args.scale), (0, 0, args.scale))
+    base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
+elif args.type == "442":
+    # *2222
+    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
+    base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
+elif args.type == "632":
+    # *632
+    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
+                                         (0.5*args.scale, 0, 0), (0, 0, args.scale * np.sqrt(3.0) / 2.0))
+    base_kernel = tiling.HexKernel(args.radius, (0, 0), group)
+elif args.type == "333":
+    # *333
+    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
+                                         (args.scale, 0, 0), (0.5*args.scale, 0, args.scale * np.sqrt(3.0) / 2.0))
+    base_kernel = tiling.HexKernel(args.radius, (0, 0), group)
+else:
+    if args.type.startswith("x"):
+        try:
+            order = int(args.type[1:])
+        except ValueError:
+            assert False, "Invalid scene type, %s. Must be one of xx x2222 x442 x642 x333 or xN, " \
+                          "where N is a positive integer." % args.type
+        # TODO: Dihedral case
+        group = None
+        base_kernel = None
+    else:
+        assert False, "Invalid scene type, %s. Must be one of xx x2222 x442 x642 x333 or xN, " \
+                      "where N is a positive integer." % args.type
+
+output_dir = "./output_%s_%s" % (args.file, str(int(time.time())))
+output_dir = os.path.realpath(output_dir)
+os.mkdir(output_dir)
+
+frustum = scene_parsing.make_frustum(args.file)
+kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
+geometry_display_list = None
+
+i = 0
+for kernel in kt.visible_kernels:
+    scene_doc = sp.gen_scene_xml(args.file, list(base_kernel.fundamental_domain_transforms))
+    inc_doc = sp.gen_incompleteness_xml(args.file, list(base_kernel.fundamental_domain_transforms))
+    depth_doc = sp.gen_depth_xml_from_scene(scene_doc)
+
+    with open(os.path.join(output_dir, "_%d.clr" % i), "w+") as f:
+        f.write(etree.tostring(scene_doc, pretty_print=True))
+    with open(os.path.join(output_dir, "_%d" % i), "w+") as f:
+        f.write(etree.tostring(inc_doc, pretty_print=True))
+    with open(os.path.join(output_dir, "_%d" % i), "w+") as f:
+        f.write(etree.tostring(depth_doc, pretty_print=True))
+    i += 1
+
+if args.visualize:
+    gl_viewer = Viewer()
+    gl_viewer.set_init_function(init)
+    gl_viewer.set_draw_function(draw)
+    gl_viewer.set_resize_function(resize)
+    gl_viewer.run()

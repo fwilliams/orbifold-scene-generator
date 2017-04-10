@@ -7,6 +7,86 @@ from geometry import shapes, utils
 EPSILON = 1e-8
 
 
+class FriezeReflectionGroup(object):
+    def __init__(self, height, up, mirror1_ctr, mirror2_ctr):
+        ctr1 = utils.make_projective_point(mirror1_ctr)
+        ctr2 = utils.make_projective_point(mirror2_ctr)
+        up = utils.make_projective_vector(up)
+
+        width = np.linalg.norm(ctr2 - ctr1)
+        m1n = ctr2 - ctr1
+        m1n /= width
+        m2n = ctr1 - ctr2
+        m2n /= width
+        up_proj = up - np.dot(up, m1n)*m1n
+        up_proj /= np.linalg.norm(up_proj)
+        right_proj = utils.make_projective_vector(np.cross(up_proj[0:3], m1n[0:3]))
+
+        self._mirror_planes = [
+            shapes.Plane(ctr1, ctr1 + up_proj, ctr1 + right_proj),
+            shapes.Plane(ctr2, ctr2 + up_proj, ctr2 + right_proj)
+        ]
+        self._dihedral_transforms = [np.eye(4), utils.reflection_matrix(self._mirror_planes[0])]
+        self._translational_basis = [2*m1n*width, 2*m2n*width]
+        b = ctr1 - up_proj * height * 0.5
+
+        self._vertices = [b - right_proj*width*0.5, b + right_proj*width*0.5,
+                          b + right_proj*width*0.5 + m1n*width,
+                          b - right_proj*width*0.5 + m1n*width]
+
+        self._mirror_edges = [(0, 1), (2, 3)]
+        tfdv = [b - right_proj*width*0.5, b + right_proj*width*0.5,
+                b + right_proj*width*0.5 + m1n*width*2.0,
+                b - right_proj * width * 0.5 + m1n*width*2.0]
+        self._translational_fd_vertices = tfdv
+        self._translational_fd_edges = [(tfdv[0], tfdv[1]),
+                                        (tfdv[1], tfdv[2]),
+                                        (tfdv[2], tfdv[3]),
+                                        (tfdv[3], tfdv[0])]
+        self._height = height
+        self._ground_plane = shapes.Plane(b, b + m1n, b + right_proj)
+
+    @property
+    def n(self):
+        return 1
+
+    @property
+    def dihedral_subgroup(self):
+        return self._dihedral_transforms
+
+    @property
+    def translational_subgroup_basis(self):
+        return self._translational_basis
+
+    @property
+    def fd_vertices(self):
+        return self._vertices
+
+    @property
+    def fd_edges(self):
+        return self._mirror_edges
+
+    @property
+    def translational_fd_vertices(self):
+        return self._translational_fd_vertices
+
+    @property
+    def translational_fd_edges(self):
+        return self._translational_fd_edges
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def ground_plane(self):
+        return self._ground_plane
+
+    @property
+    def mirror_planes(self):
+        return self._mirror_planes
+
+
 class PlanarReflectionGroup(object):
     def __init__(self, height, *vertices):
         """
@@ -175,7 +255,7 @@ class PlanarReflectionGroup(object):
         return self._mirror_planes
 
 
-class SquareKernel:
+class SquareKernel(object):
     def __init__(self, radius, center, group):
         if group.n not in [2, 4]:
             raise ValueError("Cannot construct a square kernel from planar group with dihedral "
@@ -231,7 +311,7 @@ class SquareKernel:
         return self._center
 
 
-class HexKernel:
+class HexKernel(object):
     def __init__(self, radius, center, group):
         if group.n not in [3, 6]:
             raise ValueError("Cannot construct a hex kernel from planar group with dihedral "
@@ -287,6 +367,98 @@ class HexKernel:
     @property
     def center(self):
         return self._center
+
+
+class LineKernel(object):
+    def __init__(self, radius, center, group):
+        if group.n not in [1]:
+            raise ValueError("Cannot construct a line kernel from planar group with dihedral "
+                             "subgroup of order not 1")
+        self._group = group
+        self._radius = radius
+        self._diameter = 2 * radius + 1
+        self._center = np.array(center)
+
+    def __str__(self):
+        return "Line Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
+
+    def adjacent_kernels(self, overlap):
+        for direction in 1, -1:
+            new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
+            yield LineKernel(self._radius, new_ctr, self._group)
+
+    @property
+    def fundamental_domains(self):
+        for pos, translate, _ in self.translational_fundamental_domains:
+            for k in range(len(self._group.dihedral_subgroup)):
+                transform = np.dot(translate, self._group.dihedral_subgroup[k])
+                prism = shapes.Prism(self._group.height, *self._group.fd_vertices)
+                prism.transform(transform)
+                yield (pos, k), transform, prism
+
+    @property
+    def translational_fundamental_domains(self):
+        for i in range(self._diameter):
+            pos = np.array((i - self._radius)) + np.array(self._center)
+            translate = utils.translation_matrix(
+                pos * self._group.translational_subgroup_basis[1 if pos > 0 else 0])
+
+            prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+
+            prism.transform(translate)
+            yield pos, translate, prism
+
+    @property
+    def translational_fundamental_domain_transforms(self):
+        for _, tx, _ in self.translational_fundamental_domains:
+            yield tx
+
+    @property
+    def fundamental_domain_transforms(self):
+        for _, tx, _ in self.fundamental_domains:
+            yield tx
+
+    @property
+    def center(self):
+        return self._center
+
+
+class DihedralKernel(object):
+    def __init__(self, group):
+        self._group = group
+
+    def __str__(self):
+        return "Dihedral Kernel of order %d" % self._group.n
+
+    def adjacent_kernels(self, overlap):
+        return []
+
+    @property
+    def fundamental_domains(self):
+        for k in range(len(self._group.dihedral_subgroup)):
+            transform = self._group.dihedral_subgroup[k]
+            prism = shapes.Prism(self._group.height, *self._group.fd_vertices)
+            prism.transform(transform)
+            yield (0, k), transform, prism
+
+    @property
+    def translational_fundamental_domains(self):
+        prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+        yield 0, np.eye(4), prism
+
+    @property
+    def translational_fundamental_domain_transforms(self):
+        for _, tx, _ in self.translational_fundamental_domains:
+            yield tx
+
+    @property
+    def fundamental_domain_transforms(self):
+        for _, tx, _ in self.fundamental_domains:
+            yield tx
+
+    @property
+    def center(self):
+        return 0
 
 
 class KernelTiling:
