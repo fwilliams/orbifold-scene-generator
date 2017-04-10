@@ -9,8 +9,6 @@ import copy
 def gen_depth_xml_from_scene(xml_doc):
     doc = copy.deepcopy(xml_doc)
     integrator = doc.find("integrator")
-
-    assert len(integrator) == 1, "Scene has more than one integrator, which is not supported."
     doc.remove(integrator)
     depth_integrator = etree.Element("integrator", type="depth")
     doc.append(depth_integrator)

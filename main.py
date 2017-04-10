@@ -16,7 +16,7 @@ def init(viewer):
     viewer.camera_controller.set_dist_from_center(5000)
     viewer.camera_controller.set_zoom_speed(750)
 
-    glutInit(len(sys.argv), sys.argv)
+    glutInit(1, [sys.argv[0]])
     glClearColor(0, 0, 0, 1.0)
     glEnable(GL_MULTISAMPLE)
     glEnable(GL_DEPTH_TEST)
@@ -114,35 +114,35 @@ def resize(viewer):
     glMatrixMode(GL_MODELVIEW)
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("file", "The name of the scene file to render.", type=str)
-argparser.add_argument("-t", "--type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
-                                            "where N is a positive integer.")
-argparser.add_argument("-r", "--radius", help="The kernel radius", type=int)
-argparser.add_argument("-s", "--args.scale", help="args.scale factor for the scene.", type=float)
-argparser.add_argument("-o", "--overlap", help="The amout that adjacent kernels overlap")
+argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
+argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
+                                    "where N is a positive integer.")
+argparser.add_argument("radius", help="The kernel radius", type=int)
+argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
+argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
 argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
 args = argparser.parse_args()
 
-
+print args.type
 if args.type == "xx":
     group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
-                                        (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
+                                         (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
     base_kernel = tiling.LineKernel(args.radius, 0, group)
-elif args.type == "2222":
+elif args.type == "x2222":
     # *2222
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
                                          (args.scale, 0, 0), (args.scale, 0, args.scale), (0, 0, args.scale))
     base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
-elif args.type == "442":
+elif args.type == "x442":
     # *2222
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
     base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
-elif args.type == "632":
+elif args.type == "x632":
     # *632
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
                                          (0.5*args.scale, 0, 0), (0, 0, args.scale * np.sqrt(3.0) / 2.0))
     base_kernel = tiling.HexKernel(args.radius, (0, 0), group)
-elif args.type == "333":
+elif args.type == "x333":
     # *333
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
                                          (args.scale, 0, 0), (0.5*args.scale, 0, args.scale * np.sqrt(3.0) / 2.0))
@@ -157,29 +157,31 @@ else:
         # TODO: Dihedral case
         group = None
         base_kernel = None
+        raise NotImplementedError("Botong, if you see this, message me. I still need to write a "
+                                  "one-liner to make this work")
     else:
         assert False, "Invalid scene type, %s. Must be one of xx x2222 x442 x642 x333 or xN, " \
                       "where N is a positive integer." % args.type
 
-output_dir = "./output_%s_%s" % (args.file, str(int(time.time())))
+output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
 output_dir = os.path.realpath(output_dir)
 os.mkdir(output_dir)
 
-frustum = scene_parsing.make_frustum(args.file)
+frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 geometry_display_list = None
 
 i = 0
 for kernel in kt.visible_kernels:
-    scene_doc = sp.gen_scene_xml(args.file, list(base_kernel.fundamental_domain_transforms))
-    inc_doc = sp.gen_incompleteness_xml(args.file, list(base_kernel.fundamental_domain_transforms))
+    scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
+    inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms))
     depth_doc = sp.gen_depth_xml_from_scene(scene_doc)
 
-    with open(os.path.join(output_dir, "_%d.clr" % i), "w+") as f:
+    with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
         f.write(etree.tostring(scene_doc, pretty_print=True))
-    with open(os.path.join(output_dir, "_%d" % i), "w+") as f:
+    with open(os.path.join(output_dir, "img_%d_inc.xml" % i), "w+") as f:
         f.write(etree.tostring(inc_doc, pretty_print=True))
-    with open(os.path.join(output_dir, "_%d" % i), "w+") as f:
+    with open(os.path.join(output_dir, "img_%d_dpt.xml" % i), "w+") as f:
         f.write(etree.tostring(depth_doc, pretty_print=True))
     i += 1
 
