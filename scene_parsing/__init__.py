@@ -15,7 +15,7 @@ def gen_depth_xml_from_scene(xml_doc):
     return doc
 
 
-def gen_incompleteness_xml(xml_filename, tx_list):
+def gen_incompleteness_xml(xml_filename, tx_list, use_bidir=False):
     scene_doc = etree.parse(xml_filename)
     root = scene_doc.getroot()
 
@@ -55,7 +55,14 @@ def gen_incompleteness_xml(xml_filename, tx_list):
     emitter = etree.SubElement(root, "emitter", type="constant")
     etree.SubElement(emitter, "rgb", name="radiance", value="#ffffff")
 
-    integrator = utils.find_unique(root, "integrator")
+    integrator = root.find("integrator")
+    root.remove(integrator)
+    if use_bidir:
+        path_integrator = etree.Element("integrator", type="bdpt")
+    else:
+        path_integrator = etree.Element("integrator", type="path")
+    root.append(path_integrator)
+
     etree.SubElement(integrator, "boolean", name="incompleteness mode", value="true")
     return root
 

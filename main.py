@@ -34,7 +34,7 @@ def init(viewer):
     glLightfv(GL_LIGHT0, GL_AMBIENT, (0.0, 0.0, 0.0, 1.0))
     glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.3, 0.3, 0.3, 1.0))
 
-    print("Generating geometry...")
+    print("Loading geometry into viewer...")
 
     tilemap = dict()
     for k in kt.visible_kernels:
@@ -78,7 +78,7 @@ def init(viewer):
     glPopAttrib(GL_ENABLE_BIT)
     glEndList()
 
-    print("Done generating geometry!")
+    print("Done loading geometry!")
 
 
 def draw(viewer):
@@ -121,9 +121,10 @@ argparser.add_argument("radius", help="The kernel radius", type=int)
 argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
 argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
 argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
+argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
+                                                 "incompleteness images", action="store_true")
 args = argparser.parse_args()
 
-print args.type
 if args.type == "xx":
     group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
                                          (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
@@ -171,10 +172,11 @@ frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 geometry_display_list = None
 
+print("Generating scene data...")
 i = 0
 for kernel in kt.visible_kernels:
     scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
-    inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms))
+    inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
     depth_doc = sp.gen_depth_xml_from_scene(scene_doc)
 
     with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
@@ -184,6 +186,8 @@ for kernel in kt.visible_kernels:
     with open(os.path.join(output_dir, "img_%d_dpt.xml" % i), "w+") as f:
         f.write(etree.tostring(depth_doc, pretty_print=True))
     i += 1
+
+print("Saved scene data to %s" % output_dir)
 
 if args.visualize:
     gl_viewer = Viewer()
