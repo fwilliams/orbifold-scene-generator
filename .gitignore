@@ -1,2 +1,7 @@
 *.pyc
 .idea
+compositor/compositor.creator
+compositor/compositor.creator.user
+compositor/compositor.includes
+compositor/compositor.files
+compositor/compositor.config

@@ -177,14 +177,11 @@ i = 0
 for kernel in kt.visible_kernels:
     scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
     inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
-    depth_doc = sp.gen_depth_xml_from_scene(scene_doc)
 
     with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
         f.write(etree.tostring(scene_doc, pretty_print=True))
-    with open(os.path.join(output_dir, "img_%d_inc.xml" % i), "w+") as f:
+    with open(os.path.join(output_dir, "inc_img_%d_clr.xml" % i), "w+") as f:
         f.write(etree.tostring(inc_doc, pretty_print=True))
-    with open(os.path.join(output_dir, "img_%d_dpt.xml" % i), "w+") as f:
-        f.write(etree.tostring(depth_doc, pretty_print=True))
     i += 1
 
 print("Saved scene data to %s" % output_dir)

@@ -26,10 +26,14 @@
     <!--</sensor>-->
     <integrator type="opath">
         <string name="otype" value="*2222"/>
-        <float name="r1" value="0.7"/>
-        <float name="r2" value="0.7"/>
-        <float name="r3" value="0.7"/>
-        <float name="r4" value="0.7"/>
+        <spectrum name="k1" value="1.0"/>
+        <spectrum name="k2" value="1.0"/>
+        <spectrum name="k3" value="1.0"/>
+        <spectrum name="k4" value="1.0"/>
+        <spectrum name="eta1" value="0.1"/>
+        <spectrum name="eta2" value="0.1"/>
+        <spectrum name="eta3" value="0.1"/>
+        <spectrum name="eta4" value="0.1"/>
     </integrator>
 
     <sensor type="perspective">
@@ -49,8 +53,10 @@
         <film type="hdrfilm">
             <integer name="height" value="512"/>
             <integer name="width" value="512"/>
-
-            <rfilter type="gaussian"/>
+            <string name="componentFormat" value="float32"/>
+            <rfilter type="gaussian">
+                <!--<float name="stddev" value="0.5"/>-->
+            </rfilter>
         </film>
     </sensor>
     <!--
@@ -144,7 +150,7 @@
         <ref id="light"/>
 
         <emitter type="area">
-            <spectrum name="radiance" value="400:18.4, 500:18.4, 600:18.4, 700:18.4"/>
+            <spectrum name="radiance" value="120"/>
         </emitter>
     </shape>
 

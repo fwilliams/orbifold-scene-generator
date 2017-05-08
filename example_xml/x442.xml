@@ -4,10 +4,12 @@
     <!--<integrator type="path"/>-->
     <integrator type="opath">
         <string name="otype" value="*442"/>
-        <float name="r1" value="0.7"/>
-        <float name="r2" value="0.7"/>
-        <float name="r3" value="0.7"/>
-        <float name="r4" value="0.7"/>
+        <spectrum name="k1" value="0.7"/>
+        <spectrum name="k2" value="0.7"/>
+        <spectrum name="k3" value="0.7"/>
+        <spectrum name="eta1" value="0.1"/>
+        <spectrum name="eta2" value="0.1"/>
+        <spectrum name="eta3" value="0.1"/>
     </integrator>
 
     <sensor type="perspective">
