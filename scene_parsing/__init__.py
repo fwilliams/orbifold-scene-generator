@@ -72,6 +72,7 @@ def gen_scene_xml(xml_filename, tx_list):
     root = scene_doc.getroot()
 
     shape_nodes = root.findall("shape")
+    shape_nodes.extend(root.findall("emitter"))
     shape_nodes_copy = copy.deepcopy(shape_nodes)
 
     for s in shape_nodes:
