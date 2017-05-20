@@ -16,8 +16,7 @@ class FriezeReflectionGroup(object):
         width = np.linalg.norm(ctr2 - ctr1)
         m1n = ctr2 - ctr1
         m1n /= width
-        m2n = ctr1 - ctr2
-        m2n /= width
+        m2n = -m1n
         up_proj = up - np.dot(up, m1n)*m1n
         up_proj /= np.linalg.norm(up_proj)
         right_proj = utils.make_projective_vector(np.cross(up_proj[0:3], m1n[0:3]))
@@ -401,7 +400,7 @@ class LineKernel(object):
         for i in range(self._diameter):
             pos = np.array((i - self._radius)) + np.array(self._center)
             translate = utils.translation_matrix(
-                pos * self._group.translational_subgroup_basis[1 if pos > 0 else 0])
+                pos * self._group.translational_subgroup_basis[1 if (pos % 2) == 0 else 0])
 
             prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
 

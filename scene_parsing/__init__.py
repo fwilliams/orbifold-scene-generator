@@ -6,7 +6,7 @@ import utils
 import copy
 
 
-def gen_incompleteness_xml(xml_filename, tx_list, use_bidir=False):
+def gen_incompleteness_xml(xml_filename, tx_list, render_depth=False, use_bidir=False):
     scene_doc = etree.parse(xml_filename)
     root = scene_doc.getroot()
 
@@ -45,24 +45,27 @@ def gen_incompleteness_xml(xml_filename, tx_list, use_bidir=False):
     # print(etree.tostring(root, pretty_print=True))
     emitter = etree.SubElement(root, "emitter", type="constant")
     etree.SubElement(emitter, "rgb", name="radiance", value="#ffffff")
-
     integrator = root.find("integrator")
-    root.remove(integrator)
-    mc_integrator = etree.Element("integrator", type="multichannel")
-    etree.SubElement(mc_integrator, "integrator", type="bdpt" if use_bidir else "path")
-    field_integrator = etree.SubElement(mc_integrator, "integrator", type="field")
-    etree.SubElement(field_integrator, "string", name="field", value="distance")
-    etree.SubElement(field_integrator, "float", name="undefined", value="3.40282e+38")
-    root.append(mc_integrator)
 
-    sensor = root.find("sensor")
-    film = sensor.find("film")
-    component_format = root.xpath("//string[@name='componentFormat']")
-    if component_format:
-        film.remove(component_format)
-    etree.SubElement(film, "string", name="componentFormat", value="float32")
-    etree.SubElement(film, "string", name="pixelFormat", value="rgb, luminance")
-    etree.SubElement(film, "string", name="channelNames", value="color, distance")
+    if render_depth:
+        root.remove(integrator)
+        mc_integrator = etree.Element("integrator", type="multichannel")
+        etree.SubElement(mc_integrator, "integrator", type="bdpt" if use_bidir else "path")
+        field_integrator = etree.SubElement(mc_integrator, "integrator", type="field")
+        etree.SubElement(field_integrator, "string", name="field", value="distance")
+        etree.SubElement(field_integrator, "float", name="undefined", value="3.40282e+38")
+        root.append(mc_integrator)
+
+        sensor = root.find("sensor")
+        film = sensor.find("film")
+        component_format = root.xpath("//string[@name='componentFormat']")
+        if component_format:
+            assert len(component_format) == 1, "Multiple componentFormats wtf..."
+            film.remove(component_format[0])
+        etree.SubElement(film, "string", name="componentFormat", value="float32")
+        etree.SubElement(film, "string", name="pixelFormat", value="rgb, luminance")
+        etree.SubElement(film, "string", name="channelNames", value="color, distance")
+
     etree.SubElement(integrator, "boolean", name="incompleteness mode", value="true")
     return root
 
@@ -104,7 +107,8 @@ def gen_scene_xml(xml_filename, tx_list):
     film = sensor.find("film")
     component_format = root.xpath("//string[@name='componentFormat']")
     if component_format:
-        film.remove(component_format)
+        assert len(component_format) == 1, "Multiple componentFormats wtf..."
+        film.remove(component_format[0])
     etree.SubElement(film, "string", name="componentFormat", value="float32")
 
     # print(etree.tostring(root, pretty_print=True))
