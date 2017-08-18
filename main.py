@@ -123,7 +123,20 @@ argparser.add_argument("scale", help="args.scale factor for the scene.", type=fl
 argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
 argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
                                                  "incompleteness images", action="store_true")
+argparser.add_argument("ceiling", help="The flag used to generate ceiling reflections", type = bool, default = False)
+argparser.add_argument("floor", help="The flag used to generate floor reflections", type = bool, default = False)
 args = argparser.parse_args()
+
+# args.type = "x2222"
+# args.filename = "./example_xml/x2222.xml"
+# args.radius = 4
+# args.overlap = 1
+# args.scale = 560
+# args.visualize = True;
+
+
+
+
 
 if args.type == "xx":
     group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
@@ -163,6 +176,9 @@ else:
     else:
         assert False, "Invalid scene type, %s. Must be one of xx x2222 x442 x642 x333 or xN, " \
                       "where N is a positive integer." % args.type
+
+
+
 
 output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
 output_dir = os.path.realpath(output_dir)
