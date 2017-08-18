@@ -114,25 +114,26 @@ def resize(viewer):
     glMatrixMode(GL_MODELVIEW)
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
-argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
-                                    "where N is a positive integer.")
-argparser.add_argument("radius", help="The kernel radius", type=int)
-argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
-argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
-argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
-argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
-                                                 "incompleteness images", action="store_true")
-argparser.add_argument("ceiling", help="The flag used to generate ceiling reflections", type = bool, default = False)
-argparser.add_argument("floor", help="The flag used to generate floor reflections", type = bool, default = False)
+# argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
+# argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
+#                                     "where N is a positive integer.")
+# argparser.add_argument("radius", help="The kernel radius", type=int)
+# argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
+# argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
+# argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
+# argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
+#                                                  "incompleteness images", action="store_true")
+# argparser.add_argument("ceiling", help="The flag used to generate ceiling reflections", type = bool, default = False)
+# argparser.add_argument("floor", help="The flag used to generate floor reflections", type = bool, default = False)
 args = argparser.parse_args()
 
-# args.type = "x2222"
-# args.filename = "./example_xml/x2222.xml"
-# args.radius = 4
-# args.overlap = 1
-# args.scale = 560
-# args.visualize = True;
+args.type = "x2222"
+args.filename = "./example_xml/x2222.xml"
+args.radius = 4
+args.overlap = 1
+args.scale = 560
+args.bidir = False;
+args.visualize = True;
 
 
 

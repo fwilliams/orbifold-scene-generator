@@ -59,7 +59,9 @@ def gen_incompleteness_xml(xml_filename, tx_list, use_bidir=False):
     film = sensor.find("film")
     component_format = root.xpath("//string[@name='componentFormat']")
     if component_format:
-        film.remove(component_format)
+        for cf in component_format:
+            film.remove(cf)
+
     etree.SubElement(film, "string", name="componentFormat", value="float32")
     etree.SubElement(film, "string", name="pixelFormat", value="rgb, luminance")
     etree.SubElement(film, "string", name="channelNames", value="color, distance")
@@ -104,7 +106,9 @@ def gen_scene_xml(xml_filename, tx_list):
     film = sensor.find("film")
     component_format = root.xpath("//string[@name='componentFormat']")
     if component_format:
-        film.remove(component_format)
+        for cf in component_format:
+            film.remove(cf)
+
     etree.SubElement(film, "string", name="componentFormat", value="float32")
 
     # print(etree.tostring(root, pretty_print=True))
