@@ -81,15 +81,15 @@ def draw_axes(size, color_x=(1, 0, 0), color_y=(0, 1, 0), color_z=(0, 0, 1), lin
     old_lw = glGetFloat(GL_LINE_WIDTH)
     glLineWidth(line_width)
     glBegin(GL_LINES)
-    # X axis
+    # X axis red
     glColor3f(*color_x)
     glVertex3f(0.0, 0.0, 0.0)
     glVertex3f(size[0], 0.0, 0.0)
-    # Y axis
+    # Y axis green
     glColor3f(*color_y)
     glVertex3f(0.0, 0.0, 0.0)
     glVertex3f(0.0, size[1], 0.0)
-    # Z axis
+    # Z axis blue
     glColor3f(*color_z)
     glVertex3f(0.0, 0.0, 0.0)
     glVertex3f(0.0, 0.0, size[2])

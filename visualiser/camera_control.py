@@ -21,6 +21,9 @@ class ArcballCameraController(QtCore.QObject):
         self.size = np.array((0, 0))
         self._zoom_speed = 0.1
 
+        self.right_last_mouse_point = None
+        self.right_current_mouse_point = None
+
     @staticmethod
     def _screen_pos_to_spherical(*args):
         if len(args) == 2:
@@ -96,6 +99,11 @@ class ArcballCameraController(QtCore.QObject):
                 self.last_mouse_point = np.array((pos.x(), pos.y()))
                 self.current_mouse_point = self.last_mouse_point
                 return True
+            if event.buttons() == QtCore.Qt.RightButton:
+                pos = event.pos()
+                self.right_last_mouse_point = np.array((pos.x(), pos.y()))
+                self.right_current_mouse_point = self.right_last_mouse_point
+                return True
         elif event.type() == QtCore.QEvent.MouseMove:
             if event.buttons() == QtCore.Qt.LeftButton:
                 pos = event.pos()
@@ -119,6 +127,27 @@ class ArcballCameraController(QtCore.QObject):
 
                 r_mat = utils.axis_angle_rotation_matrix(axis, angle)
                 self._camera_rotation = np.dot(r_mat, self._camera_rotation)
+
+            #move the camera
+            if event.buttons() == QtCore.Qt.RightButton:
+                pos = event.pos()
+
+                self.right_last_mouse_point = self.right_current_mouse_point
+                self.right_current_mouse_point = np.array((pos.x(), pos.y()))
+
+                flip_y = np.array((1, -1))
+
+                nrm_last_pos = (self.right_last_mouse_point) * flip_y
+                nrm_cur_pos = (self.right_current_mouse_point) * flip_y
+
+                if (nrm_last_pos == nrm_cur_pos).all():
+                    return super(ArcballCameraController, self).eventFilter(source, event)
+
+                # print("p1 is ",nrm_last_pos," p2 is",nrm_cur_pos)
+                offset = 0.01 * (self.size[0] + self.size[1])
+                d = (nrm_cur_pos - nrm_last_pos) * offset
+
+                self._camera_translation[0:2, 3] += (d[0], d[1])
         elif event.type() == QtCore.QEvent.Wheel:
             notches = event.angleDelta().y() / 120
             self._camera_translation[2][3] += notches*self._zoom_speed

@@ -1,5 +1,8 @@
 import sys
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
+from PyQt5.QtWidgets import QWidget, QCheckBox, QApplication, QHBoxLayout,QMainWindow,QToolTip,QPushButton, QMessageBox,QAction,QTextEdit,QLabel, qApp
+from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtCore import Qt, QCoreApplication
 
 import camera_control
 import gl_geometry
@@ -12,18 +15,112 @@ except ImportError:
     QtWidgets.QMessageBox.critical(None, "OpenGL Import Error", "PyOpenGL must be installed to run this example.")
     sys.exit(1)
 
+# not been used
+# class Window(QtWidgets.QWidget):
+#     def __init__(self):
+#         super(Window, self).__init__()
+#
+#         self.gl_widget = GLWidget()
+#
+#         main_layout = QtWidgets.QHBoxLayout()
+#         main_layout.addWidget(self.gl_widget)
+#
+#         self.setLayout(main_layout)
+#         self.setWindowTitle("Hello GL")
 
-class Window(QtWidgets.QWidget):
+class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        self.initUI()
+        self._projectionType = 0
+        self._showAxes = True;
 
-        self.gl_widget = GLWidget()
+    def initUI(self):
+        self.exitAction = QAction('&Exit', self)
+        self.exitAction.setToolTip('Exit Application')
+        self.exitAction.triggered.connect(qApp.quit)
 
-        main_layout = QtWidgets.QHBoxLayout()
-        main_layout.addWidget(self.gl_widget)
+        self.aboutAction = QAction('&Help', self)
+        self.aboutAction.setToolTip('Show About Dlg')
+        self.aboutAction.triggered.connect(self.showAboutDlg)
 
-        self.setLayout(main_layout)
-        self.setWindowTitle("Hello GL")
+        self.changeProjectionAction = QAction('&Perspective', self)
+        self.changeProjectionAction.setToolTip('Perspective / Orthogonal')
+        self.changeProjectionAction.triggered.connect(self.changeProjection)
+
+        self.toggleShowAxesAction = QAction('&Show Axes', self, checkable = True)
+        self.toggleShowAxesAction.setToolTip('Toggle the axes')
+        self.toggleShowAxesAction.triggered.connect(self.toggleShowAxes)
+        self.toggleShowAxesAction.setChecked(True)
+
+        self.toolbar = self.addToolBar('ToolBar')
+        self.toolbar.addAction(self.aboutAction)
+        self.toolbar.addAction(self.exitAction)
+        # self.toolbar.addAction(self.changeProjectionAction)
+        self.toolbar.addAction(self.toggleShowAxesAction)
+
+        self.statusBar().showMessage('Ready') #only works for QMainWindow
+
+        # menubar = self.menuBar()
+        # fileMenu = menubar.addMenu('&Menu')
+        # fileMenu.addAction(exitAction)
+        #
+        # aboutMenu = menubar.addMenu('&About')
+        # aboutMenu.addAction(aboutAction)
+
+        #self.gl_widget = GLWidget()
+        #self.setCentralWidget(self.gl_widget)
+        #self.setCentralWidget(gl_widget)
+
+        self.setWindowTitle("GL Viewer")
+
+    def setGLWidget(self, gl_widget):
+        self.setCentralWidget(gl_widget)
+
+    def showAboutDlg(self):
+        about.show()
+
+    def changeProjection(self):
+        self._projectionType = (self._projectionType+1)%2
+        if self._projectionType:
+            self.changeProjectionAction.setText("Orthogonal")
+        else:
+            self.changeProjectionAction.setText("Perspective")
+
+        self.update()
+
+    def toggleShowAxes(self, checked = False):
+        self._showAxes = checked
+
+
+    @property
+    def projectionType(self):
+        return self._projectionType
+
+    @property
+    def showAxes(self):
+        return self._showAxes
+
+class AboutDlg(QWidget):
+    def __init__(self):
+        super(AboutDlg, self).__init__()
+
+        self.initUI()
+
+    def initUI(self):
+        text = QLabel("This is a tool designed to generate kaleidoscopic scene \n\n\
+        Copyright@2017\n\n\
+        Using right mouse to move the scene\n\
+        Using left mouse to rotate the scene\n\
+        Using middle wheel to zoom the scene\n")
+
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(text)
+
+        self.setLayout(hbox)
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('About')
 
 
 class UserPluggableEventFilter(QtCore.QObject):
@@ -97,11 +194,14 @@ class Viewer(QtWidgets.QWidget):
 
         self.gl_widget = GLWidget(size=size)
 
-        main_layout = QtWidgets.QHBoxLayout()
-        main_layout.addWidget(self.gl_widget)
+        self._window = Window()
+        self._window.setGLWidget(self.gl_widget)
 
-        self.setLayout(main_layout)
-        self.setWindowTitle(title)
+        # main_layout = QtWidgets.QHBoxLayout()
+        # main_layout.addWidget(self.gl_widget)
+        #
+        # self.setLayout(main_layout)
+        # self.setWindowTitle(title)
 
     def set_draw_function(self, draw_func):
         self.gl_widget.draw_callback = draw_func
@@ -116,9 +216,22 @@ class Viewer(QtWidgets.QWidget):
         self.gl_widget.user_event_callback.event_callback = event_func
 
     def run(self):
-        self.show()
+        # self.show()
+        self._window.show()
         sys.exit(app.exec_())
 
+    @property
+    def mywindow(self):
+        return self._window
+
+    @property
+    def flag_projection(self):
+        return self._window.projectionType
+
+    @property
+    def flag_axes(self):
+        return self._window.showAxes
+
 app = QtWidgets.QApplication(sys.argv)
-
-
+# window = Window()
+about = AboutDlg()

@@ -2,9 +2,10 @@ from OpenGL.GL import *
 
 
 class Skybox(object):
-    def __init__(self, bottom_color=(0, 0, 0), top_color=(0, 0, 0)):
+    def __init__(self, bottom_color=(0, 0, 0), top_color=(0, 0, 0), surrounding_color=(0.5, 0.0, 0.0)):
         self._bottom_color = bottom_color
         self._top_color = top_color
+        self._surrounding_color = surrounding_color
 
     def draw(self, rotation_mat, size):
         glPushAttrib(GL_ENABLE_BIT)
@@ -22,13 +23,15 @@ class Skybox(object):
         glLoadMatrixf(rotation_mat)
         glBegin(GL_QUADS)
 
-        glColor3f(*self._bottom_color)
+        #left
+        glColor3f(*self._surrounding_color)
         glVertex3f(-1, -1, -1)
         glVertex3f(-1, -1, 1)
         glColor3f(*self._top_color)
         glVertex3f(-1, 1, 1)
         glVertex3f(-1, 1, -1)
 
+        #right
         glColor3f(*self._bottom_color)
         glVertex3f(1, -1, -1)
         glVertex3f(1, -1, 1)
@@ -36,18 +39,21 @@ class Skybox(object):
         glVertex3f(1, 1, 1)
         glVertex3f(1, 1, -1)
 
+        #bottom
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, -1)
         glVertex3f(1, -1, -1)
         glVertex3f(1, -1, 1)
         glVertex3f(-1, -1, 1)
 
+        #top
         glColor3f(*self._top_color)
         glVertex3f(-1, 1, -1)
         glVertex3f(1, 1, -1)
         glVertex3f(1, 1, 1)
         glVertex3f(-1, 1, 1)
 
+        #back
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, -1)
         glVertex3f(1, -1, -1)
@@ -55,6 +61,7 @@ class Skybox(object):
         glVertex3f(1, 1, -1)
         glVertex3f(-1, 1, -1)
 
+        #front
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, 1)
         glVertex3f(1, -1, 1)
