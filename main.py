@@ -131,16 +131,17 @@ args = argparser.parse_args()
 
 args.type = "xx"
 args.filename = "./example_xml/xxx.xml"
-args.radius = 2
-args.overlap = 0
+args.radius = 4
+args.overlap = 1
 args.scale = 560
 args.bidir = False;
 args.visualize = True;
+args.ceiling = True;
+args.floor = True;
 
 
 if args.type == "xx":
-    group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
-                                         (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
+    group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),(0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
     base_kernel = tiling.LineKernel(args.radius, 0, group)
 elif args.type == "x2222":
     # *2222
@@ -180,6 +181,13 @@ else:
 
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
+
+# if (args.ceiling or args.floor) and args.type == "xx":
+#     vgroup = tiling.FriezeReflectionGroup(args.scale, (0, 0, 1), (0, 0, 0.5*args.scale),(0, args.scale, 0.5*args.scale))
+#     # vbase_kernel = tiling.vLineKernel(args.radius, (0,0), vgroup, group, kt, base_kernel)
+#     vbase_kernel = tiling.vLineKernel(args.radius, 0, vgroup, group, kt, base_kernel)
+#     kt = tiling.vKernelTiling(base_kernel, frustum, args.overlap, kt, args.ceiling, args.floor, vbase_kernel)
+
 geometry_display_list = None
 
 # output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))

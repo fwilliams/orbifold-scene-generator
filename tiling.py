@@ -422,6 +422,142 @@ class LineKernel(object):
     def center(self):
         return self._center
 
+    @property
+    def diameter(self):
+        return self._diameter
+
+    @property
+    def radius(self):
+        return self._radius
+
+
+class vLineKernel(object):
+    # def __init__(self, radius, center, vgroup):
+    #     if vgroup.n not in [1]:
+    #         raise ValueError("Cannot construct a line kernel from planar group with dihedral "
+    #                          "subgroup of order not 1")
+    #     self._radius = radius
+    #     self._diameter = 2 * radius + 1
+    #     self._center = np.array(center)
+    #     self._vgroup = vgroup
+
+    def __init__(self, radius, center, vgroup, R2_group, R2_kernel_tiling, R2_base_kernal):
+        if vgroup.n not in [1]:
+            raise ValueError("Cannot construct a line kernel from planar group with dihedral "
+                             "subgroup of order not 1")
+        self._radius = radius
+        self._diameter = 2 * radius + 1
+        self._center = np.array(center)
+        self._vgroup = vgroup
+        self._r2_kernel_tiling = R2_kernel_tiling
+        self._r2_group = R2_group
+        self._r2_base_kernel = R2_base_kernal
+
+    def __str__(self):
+        return "vLine Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
+
+    # def adjacent_kernels(self, overlap):
+    #
+    #     # for r2_kernel in self._r2_kernel_tiling.visible_kernels:
+    #     for direction in 1, -1:
+    #         for direction_r2 in 1, -1:
+    #
+    #             if np.size(self._center) is not 2:
+    #                 raise ValueError("The R3 tiling is not correct")
+    #             if np.size(self._r2_base_kernel.center) is not 1:
+    #                 raise ValueError("The R2 tiling is not correct")
+    #
+    #             # xCor = r2_kernel.center
+    #
+    #             # new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
+    #             xCor = self._center[0] + direction_r2 * (self._r2_base_kernel.diameter - overlap)
+    #             yCor = self._center[1] + direction * (self._diameter - overlap)
+    #             new_ctr = np.array((xCor, yCor))
+    #             yield vLineKernel(self._radius, new_ctr, self._vgroup, self._r2_group, self._r2_kernel_tiling, self._r2_base_kernel)
+
+    def adjacent_kernels(self, overlap):
+        for direction in 1, -1:
+            new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
+            yield vLineKernel(self._radius, new_ctr, self._vgroup, self._r2_group, self._r2_kernel_tiling, self._r2_base_kernel)
+
+    # @property
+    # def fundamental_domains(self):
+    #     for pos, translate, _ in self.translational_fundamental_domains:
+    #         for k in range(len(self._vgroup.dihedral_subgroup)):
+    #
+    #             for pos_r2, translate_r2, _ in self._r2_base_kernel.translational_fundamental_domains:
+    #                 for k_r2 in range(len(self._r2_group.dihedral_subgroup)):
+    #
+    #                     # transform = np.dot(translate, self._group.dihedral_subgroup[k])
+    #                     # prism = shapes.Prism(self._group.height, *self._group.fd_vertices)
+    #                     # prism.transform(transform)
+    #                     # yield (pos, k), transform, prism
+    #
+    #                     transform = np.dot(self._r2_group.dihedral_subgroup[k_r2], self._vgroup.dihedral_subgroup[k])
+    #                     transform = np.dot(translate, transform)
+    #                     transform = np.dot(translate_r2, transform)
+    #
+    #                     prism = shapes.Prism(self._vgroup.height, *self._vgroup.fd_vertices)
+    #                     prism.transform(transform)
+    #                     yield (pos_r2, pos, k_r2, k), transform, prism
+
+    @property
+    def fundamental_domains(self):
+        for pos, translate, _ in self.translational_fundamental_domains:
+            for k in range(len(self._vgroup.dihedral_subgroup)):
+                transform = np.dot(translate, self._vgroup.dihedral_subgroup[k])
+                prism = shapes.Prism(self._vgroup.height, *self._vgroup.fd_vertices)
+                prism.transform(transform)
+                yield (pos, k), transform, prism
+
+    # @property
+    # def translational_fundamental_domains(self):
+    #
+    #     for i in range(self._diameter):
+    #
+    #         for j in range(self._r2_base_kernel.diameter):
+    #
+    #
+    #             pos = np.array((i - self._radius)) + np.array(self._center[1])
+    #             pos_r2 = np.array((j - self._r2_base_kernel.radius)) + np.array(self._center[0])
+    #
+    #             r3_ctr = pos * self._vgroup.translational_subgroup_basis[0 if pos > 0 else 1]
+    #             r2_ctr = pos_r2 * self._r2_group.translational_subgroup_basis[1 if pos_r2 > 0 else 0]
+    #
+    #             translate = utils.translation_matrix(r3_ctr + r2_ctr)
+    #
+    #             prism = shapes.Prism(self._vgroup.height, *self._vgroup.translational_fd_vertices)
+    #
+    #             # prism.transform(f)
+    #             prism.transform(translate)
+    #             yield np.array([pos_r2, pos]), translate, prism
+
+    @property
+    def translational_fundamental_domains(self):
+        for i in range(self._diameter):
+            pos = np.array((i - self._radius)) + np.array(self._center)
+            translate = utils.translation_matrix(
+                pos * self._vgroup.translational_subgroup_basis[0 if pos > 0 else 1])
+
+            prism = shapes.Prism(self._vgroup.height, *self._vgroup.translational_fd_vertices)
+
+            prism.transform(translate)
+            yield pos, translate, prism
+
+    @property
+    def translational_fundamental_domain_transforms(self):
+        for _, tx, _ in self.translational_fundamental_domains:
+            yield tx
+
+    @property
+    def fundamental_domain_transforms(self):
+        for _, tx, _ in self.fundamental_domains:
+            yield tx
+
+    @property
+    def center(self):
+        return self._center
+
 
 class DihedralKernel(object):
     def __init__(self, group):
@@ -470,6 +606,7 @@ class KernelTiling:
         self.visible_kernels = []
         self.frustum = frustum
         self.overlap = overlap
+        self._base_kernel = base_kernel
 
         found_isect = False
         for i, tx, fd in base_kernel.fundamental_domains:
@@ -497,3 +634,84 @@ class KernelTiling:
                 if shapes.intersects(self.frustum, prism):
                     self._add_kernel_rec(next_kernel, visited)
                     break
+
+    @property
+    def baseKernel(self):
+        return self._base_kernel
+
+class vKernelTiling:
+    """
+    A tiling of kernels which have the same shape which are fully or partially contained within a frustum.
+    base_kernel specifies the shape of
+    """
+    def __init__(self, base_kernel, frustum, overlap, kernel_tilling = None, upward = False, downward = False, vbase_kernel = None):
+        self.visible_kernels = []
+        self.frustum = frustum
+        self.overlap = overlap
+
+        # found_isect = False
+        # for i, tx, fd in base_kernel.fundamental_domains:
+        #     if shapes.intersects(self.frustum, fd):
+        #         found_isect = True
+        #         break
+        #
+        # if not found_isect:
+        #     raise ValueError("Error: Base kernel for KernelTiling does not intersect the specified frustum.")
+
+        # visited_dict = dict()
+        # visited_dict[str(base_kernel.center)] = True
+        # self._add_kernel_rec(base_kernel, visited_dict)
+
+        if(upward):
+            #create fds based on ceiling reflections
+            visited_dict = dict()
+            visited_dict[str(vbase_kernel.center)] = True
+            # new_cor = np.insert(vbase_kernel.center, 0, [0])
+            # visited_dict[str(new_cor)] = True
+            self._add_kernels_upward(kernel_tilling, upward, downward, base_kernel, vbase_kernel, visited_dict)
+
+            # for kernel in kernel_tilling.visible_kernels:
+            #     newCor = np.append(kernel.center, [0])
+            #     visited_dict[str(newCor)] = True
+            #
+            # for kernel in kernel_tilling.visible_kernels:
+            #     self.visible_kernels.append(kernel)
+
+        if(downward):
+            #create fds based on flooring reflections
+            self._add_kernels_downwards()
+
+    def __str__(self):
+        return str([str(k) for k in self.visible_kernels])
+
+    # def _add_kernel_rec(self, kernel, visited):
+    #     self.visible_kernels.append(kernel)
+    #     for next_kernel in kernel.adjacent_kernels(self.overlap):
+    #         if str(next_kernel.center) in visited:
+    #             continue
+    #         else:
+    #             visited[str(next_kernel.center)] = True
+    #         for _, tx, prism in next_kernel.translational_fundamental_domains:
+    #             if shapes.intersects(self.frustum, prism):
+    #                 self._add_kernel_rec(next_kernel, visited)
+    #                 break
+
+    def _add_kernels_upward(self, kernel_tilling, upward, downward, base_kernel, vbase_kernel, visited):
+
+        self.visible_kernels.append(vbase_kernel)
+
+        for next_kernel in vbase_kernel.adjacent_kernels(self.overlap):
+            # new_cor = np.insert(next_kernel.center, 0, [0])
+            # if str(new_cor) in visited:
+            if str(next_kernel.center) in visited:
+                continue
+            else:
+                visited[str(next_kernel.center)] = True
+
+            for _, tx, prism in next_kernel.translational_fundamental_domains:
+                if shapes.intersects(self.frustum, prism):
+                    self._add_kernels_upward(kernel_tilling, upward, downward, base_kernel, next_kernel, visited)
+                    break
+
+    def _add_kernels_downwards(self):
+        print("added kernels downwards")
