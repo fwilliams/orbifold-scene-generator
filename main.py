@@ -37,7 +37,6 @@ def init(viewer):
 
     print("Loading geometry into viewer...")
 
-    tilemap = dict()
     for k in kt.visible_kernels:
         for index, f, p in k.fundamental_domains:
             if str(index) in tilemap:
@@ -56,25 +55,13 @@ def init(viewer):
         elif t[2] == 2:
             color = np.array((0.9, 0.9, 0.0))
         elif t[2] == 3:
-            color = np.array((0.9, 0.7, 0.0))
+            color = np.array((0.0, 0.7, 0.0))
         else:
             color = np.array((0.9, 0.1, 0.1))
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0.7, 0.7, 0.7))
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color)
         gl_geometry.draw_solid_prism(t[0])
 
-        glDisable(GL_DEPTH_TEST)
-        glDisable(GL_LIGHTING)
-        glColor3f(1, 1, 1)
-        gl_geometry.draw_prism_normals(t[0], 100.0)
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-    glDisable(GL_DEPTH_TEST)
-    glDisable(GL_LIGHTING)
-    glColor3f(1, 1, 1)
-    for t in tilemap.values():
-        gl_geometry.draw_wire_prism(t[0])
 
     glPopAttrib(GL_ENABLE_BIT)
     glEndList()
@@ -96,9 +83,19 @@ def draw(viewer):
 
     glCallList(geometry_display_list)
 
+
     glPushAttrib(GL_ENABLE_BIT)
     glDisable(GL_DEPTH_TEST)
     glDisable(GL_LIGHTING)
+
+    for t in tilemap.values():
+        if gl_viewer.flag_normals:
+            glColor3f(1, 1, 1)
+            gl_geometry.draw_prism_normals(t[0], 100.0)
+
+        if gl_viewer.flag_wires:
+            glColor3f(1, 1, 1)
+            gl_geometry.draw_wire_prism(t[0])
 
     if gl_viewer.flag_axes:
         gl_geometry.draw_axes((10000, 10000, 10000))
@@ -132,10 +129,10 @@ argparser = argparse.ArgumentParser()
 # argparser.add_argument("floor", help="The flag used to generate floor reflections", type = bool, default = False)
 args = argparser.parse_args()
 
-args.type = "x2222"
-args.filename = "./example_xml/x2222.xml"
+args.type = "xx"
+args.filename = "./example_xml/xxx.xml"
 args.radius = 2
-args.overlap = 1
+args.overlap = 0
 args.scale = 560
 args.bidir = False;
 args.visualize = True;
@@ -205,6 +202,8 @@ geometry_display_list = None
 
 if args.visualize:
     gl_viewer = Viewer()
+
+    tilemap = dict()
     gl_viewer.set_init_function(init)
     gl_viewer.set_draw_function(draw)
     gl_viewer.set_resize_function(resize)

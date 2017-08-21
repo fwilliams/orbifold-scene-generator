@@ -1,0 +1,321 @@
+2017-05-20 15:28:27 INFO  main [mitsuba.cpp:275] Mitsuba version 0.5.0 (Linux, 64 bit), Copyright (c) 2014 Wenzel Jakob
+2017-05-20 15:28:27 INFO  main [mitsuba.cpp:377] Parsing scene description from "output_toilet_xx_v2_opath.xml_1495318163/img_0_clr.xml" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/opath.so" ..
+2017-05-20 15:28:27 WARN  main [OrbifoldPathTracer] INCOMPLETENESS MODE = false
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/independent.so" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/gaussian.so" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/hdrfilm.so" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/perspective.so" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/diffuse.so" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/checkerboard.so" ..
+2017-05-20 15:28:27 INFO  main [PluginManager] Loading plugin "plugins/bitmap.so" ..
+2017-05-20 15:28:27 INFO  main [BitmapTexture] Loading texture "bricks.png"
+2017-05-20 15:28:28 INFO  main [PluginManager] Loading plugin "plugins/lanczos.so" ..
+2017-05-20 15:28:28 INFO  main [BitmapTexture] Loading texture "tile.jpg"
+2017-05-20 15:28:28 INFO  main [MIPMap] Generating MIP map cache file "/nfs/guille/zhange/geometry/qub/research_mirror/scenes/toiletxx/mesh/tile.mip" ..
+2017-05-20 15:28:28 INFO  main [BitmapTexture] Loading texture "tile2.jpg"
+2017-05-20 15:28:28 INFO  main [MIPMap] Generating MIP map cache file "/nfs/guille/zhange/geometry/qub/research_mirror/scenes/toiletxx/mesh/tile2.mip" ..
+2017-05-20 15:28:29 INFO  main [BitmapTexture] Loading texture "tile3.jpg"
+2017-05-20 15:28:29 INFO  main [BitmapTexture] Loading texture "tile4.jpg"
+2017-05-20 15:28:29 INFO  main [MIPMap] Generating MIP map cache file "/nfs/guille/zhange/geometry/qub/research_mirror/scenes/toiletxx/mesh/tile4.mip" ..
+2017-05-20 15:28:29 INFO  main [PluginManager] Loading plugin "plugins/conductor.so" ..
+2017-05-20 15:28:29 INFO  main [spectrum.cpp:601] "Ag.eta.spd": loaded a spectral power distribution with 56 entries (between 298.757050 and 885.601257 nm)
+2017-05-20 15:28:29 INFO  main [spectrum.cpp:601] "Ag.k.spd": loaded a spectral power distribution with 56 entries (between 298.757050 and 885.601257 nm)
+2017-05-20 15:28:29 INFO  main [spectrum.cpp:601] "Cu.eta.spd": loaded a spectral power distribution with 55 entries (between 302.400421 and 885.601257 nm)
+2017-05-20 15:28:30 INFO  main [spectrum.cpp:601] "Cu.k.spd": loaded a spectral power distribution with 55 entries (between 302.400421 and 885.601257 nm)
+2017-05-20 15:28:30 INFO  main [PluginManager] Loading plugin "plugins/dielectric.so" ..
+2017-05-20 15:28:30 INFO  main [PluginManager] Loading plugin "plugins/roughconductor.so" ..
+2017-05-20 15:28:30 INFO  main [spectrum.cpp:601] "Al.eta.spd": loaded a spectral power distribution with 56 entries (between 298.757050 and 885.601257 nm)
+2017-05-20 15:28:30 INFO  main [spectrum.cpp:601] "Al.k.spd": loaded a spectral power distribution with 56 entries (between 298.757050 and 885.601257 nm)
+2017-05-20 15:28:30 INFO  main [PluginManager] Loading plugin "plugins/plastic.so" ..
+2017-05-20 15:28:30 INFO  main [PluginManager] Loading plugin "plugins/roughplastic.so" ..
+2017-05-20 15:28:30 INFO  main [spectrum.cpp:601] "Au.eta.spd": loaded a spectral power distribution with 56 entries (between 298.757050 and 885.601257 nm)
+2017-05-20 15:28:30 INFO  main [spectrum.cpp:601] "Au.k.spd": loaded a spectral power distribution with 56 entries (between 298.757050 and 885.601257 nm)
+2017-05-20 15:28:30 INFO  main [PluginManager] Loading plugin "plugins/obj.so" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "cbox_floor.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] cbox_floor: 2 triangles, 4 vertices (merged 2 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "cbox_floor.obj" (took 1 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "cbox_ceiling.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] cbox_ceiling: 2 triangles, 4 vertices (merged 2 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "cbox_ceiling.obj" (took 0 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "mirror_left.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] right2222: 2 triangles, 4 vertices (merged 2 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "mirror_left.obj" (took 1 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "mirror_right.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] left2222: 2 triangles, 4 vertices (merged 2 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "mirror_right.obj" (took 0 ms)
+2017-05-20 15:28:30 INFO  main [BitmapTexture] Loading texture "wood.jpg"
+2017-05-20 15:28:30 INFO  main [MIPMap] Generating MIP map cache file "/nfs/guille/zhange/geometry/qub/research_mirror/scenes/toiletxx/mesh/wood.mip" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "door.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Door_right: 9454 triangles, 20637 vertices (merged 7725 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "door.obj" (took 140 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "wall_front_hole.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] back2223: 18 triangles, 26 vertices (merged 28 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "wall_front_hole.obj" (took 1 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "frame_2222_back.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] front_frame336: 64 triangles, 168 vertices (merged 24 vertices).
+2017-05-20 15:28:30 WARN  main [WavefrontOBJ] Could not find referenced material library 'frame_2222_back.mtl'
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "frame_2222_back.obj" (took 14 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "frame_front_middle.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] front_frame339: 64 triangles, 168 vertices (merged 24 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "frame_front_middle.obj" (took 2 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "picture.obj" ..
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] picture003: 64 triangles, 170 vertices (merged 22 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] picture: 2 triangles, 4 vertices (merged 2 vertices).
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading OBJ materials from "picture.mtl" ..
+2017-05-20 15:28:30 INFO  main [BitmapTexture] Loading texture "wood.jpg"
+2017-05-20 15:28:30 INFO  main [MIPMap] Mapped MIP map cache file "/nfs/guille/zhange/geometry/qub/research_mirror/scenes/toiletxx/mesh/wood.mip" into memory (24.0 MiB).
+2017-05-20 15:28:30 INFO  main [BitmapTexture] Loading texture "logo2.jpg"
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Done with "picture.obj" (took 258 ms)
+2017-05-20 15:28:30 INFO  main [WavefrontOBJ] Loading geometry from "tube_box.obj" ..
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Box001: 50776 triangles, 149832 vertices (merged 2496 vertices).
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Done with "tube_box.obj" (took 680 ms)
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Loading geometry from "tube_box2.obj" ..
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Box002: 100 triangles, 150 vertices (merged 150 vertices).
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Done with "tube_box2.obj" (took 2 ms)
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Loading geometry from "tube_cylinder.obj" ..
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Cylinder002: 9947 triangles, 26322 vertices (merged 3519 vertices).
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Done with "tube_cylinder.obj" (took 89 ms)
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Loading geometry from "tube_foot1.obj" ..
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Line002: 13574 triangles, 38186 vertices (merged 2536 vertices).
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Done with "tube_foot1.obj" (took 92 ms)
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Loading geometry from "tube_foot2.obj" ..
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Line003: 13574 triangles, 38264 vertices (merged 2458 vertices).
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Done with "tube_foot2.obj" (took 92 ms)
+2017-05-20 15:28:31 INFO  main [WavefrontOBJ] Loading geometry from "tube_foot3.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Line004: 13574 triangles, 38260 vertices (merged 2462 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "tube_foot3.obj" (took 92 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "tube_foot4.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Line005: 13574 triangles, 38247 vertices (merged 2475 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "tube_foot4.obj" (took 92 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] sink: 7712 triangles, 16552 vertices (merged 6584 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink.obj" (took 56 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_drain.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Drain_Tube: 864 triangles, 2342 vertices (merged 250 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_drain.obj" (took 7 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_faucet.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Faucet: 4224 triangles, 9220 vertices (merged 3452 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_faucet.obj" (took 49 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_faucetHandle.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Faucet_Handle: 3824 triangles, 11314 vertices (merged 158 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_faucetHandle.obj" (took 56 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_flange.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Flange: 5680 triangles, 14582 vertices (merged 2458 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_flange.obj" (took 78 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_hoses.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Hoses: 2976 triangles, 8814 vertices (merged 114 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_hoses.obj" (took 44 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_overflow.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Overflow: 1920 triangles, 5201 vertices (merged 559 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_overflow.obj" (took 28 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_stand.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Stand: 640 triangles, 1172 vertices (merged 748 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_stand.obj" (took 9 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_valve.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Valve_01: 4964 triangles, 12414 vertices (merged 2478 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_valve.obj" (took 66 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "sink_valve2.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Valve_02: 4964 triangles, 12498 vertices (merged 2394 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "sink_valve2.obj" (took 66 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "pot_bolt_caps.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Bolt_Caps: 168 triangles, 492 vertices (merged 12 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "pot_bolt_caps.obj" (took 3 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "pot_bowl.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Bowl: 18240 triangles, 48189 vertices (merged 6531 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "pot_bowl.obj" (took 238 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "pot_flushbutton.obj" ..
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Flush_Button: 8096 triangles, 17642 vertices (merged 6646 vertices).
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Done with "pot_flushbutton.obj" (took 99 ms)
+2017-05-20 15:28:32 INFO  main [WavefrontOBJ] Loading geometry from "pot_hinges.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Hinges: 18240 triangles, 49864 vertices (merged 4856 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_hinges.obj" (took 228 ms)
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Loading geometry from "pot_lid.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Lid: 13840 triangles, 39653 vertices (merged 1867 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_lid.obj" (took 165 ms)
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Loading geometry from "pot_seat.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Seat: 19920 triangles, 57188 vertices (merged 2572 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_seat.obj" (took 231 ms)
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Loading geometry from "pot_tank.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Tank: 1632 triangles, 4295 vertices (merged 601 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_tank.obj" (took 20 ms)
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Loading geometry from "pot_tankcover.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Tank_cover: 4096 triangles, 11902 vertices (merged 386 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_tankcover.obj" (took 52 ms)
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Loading geometry from "pot_tube.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Drainage_Tube: 8832 triangles, 25520 vertices (merged 976 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_tube.obj" (took 104 ms)
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Loading geometry from "pot_water.obj" ..
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Water: 30 triangles, 32 vertices (merged 58 vertices).
+2017-05-20 15:28:33 INFO  main [WavefrontOBJ] Done with "pot_water.obj" (took 1 ms)
+2017-05-20 15:28:33 INFO  main [PluginManager] Loading plugin "plugins/shapegroup.so" ..
+2017-05-20 15:28:33 INFO  main [KDTreeBase] Constructing a SAH kd-tree (255655 primitives) ..
+2017-05-20 15:28:34 INFO  main [KDTreeBase] Finished -- took 1060 ms.
+2017-05-20 15:28:34 INFO  main [PluginManager] Loading plugin "plugins/instance.so" ..
+2017-05-20 15:28:34 INFO  main [PluginManager] Loading plugin "plugins/area.so" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Loading geometry from "disk.obj" ..
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Circle002: 26 triangles, 28 vertices (merged 50 vertices).
+2017-05-20 15:28:34 INFO  main [WavefrontOBJ] Done with "disk.obj" (took 0 ms)
+2017-05-20 15:28:34 INFO  ren0 [KDTreeBase] Constructing a SAH kd-tree (1134 primitives) ..
+2017-05-20 15:28:34 INFO  ren0 [KDTreeBase] Finished -- took 12 ms.
+2017-05-20 15:28:34 INFO  ren0 [SamplingIntegrator] Starting render job (1024x1024, 8000 samples, 24 cores, SSE2 enabled) ..
+2017-05-20 18:21:17 INFO  ren0 [RenderJob] Render time: 2.8785h
+2017-05-20 18:21:17 INFO  ren0 [HDRFilm] Writing image to "/nfs/guille/zhange/geometry/qub/research_mirror/scenes/toiletxx/output_toilet_xx_v2_opath.xml_1495318163/img_0_clr.exr" ..
+2017-05-20 18:21:17 INFO  main [statistics.cpp:142] Statistics:
+------------------------------------------------------------
+ * Loaded plugins :
+    -  plugins/area.so [Area light]
+    -  plugins/bitmap.so [Bitmap texture]
+    -  plugins/checkerboard.so [Checkerboard texture]
+    -  plugins/conductor.so [Smooth conductor]
+    -  plugins/dielectric.so [Smooth dielectric BSDF]
+    -  plugins/diffuse.so [Smooth diffuse BRDF]
+    -  plugins/gaussian.so [Gaussian reconstruction filter]
+    -  plugins/hdrfilm.so [High dynamic range film]
+    -  plugins/independent.so [Independent sampler]
+    -  plugins/instance.so [Instanced geometry]
+    -  plugins/lanczos.so [Lanczos Sinc filter]
+    -  plugins/obj.so [OBJ triangle mesh loader]
+    -  plugins/opath.so [Orbifold MI path tracer]
+    -  plugins/perspective.so [Perspective camera]
+    -  plugins/plastic.so [Smooth plastic BRDF]
+    -  plugins/roughconductor.so [Rough conductor BRDF]
+    -  plugins/roughplastic.so [Rough plastic BRDF]
+    -  plugins/shapegroup.so [Grouped geometry for instancing]
+
+  * General :
+    -  Normal rays traced : 50.941 G
+    -  Shadow rays traced : 29.238 G
+
+  * Path tracer :
+    -  Average path length : 6.07 (50.94 G / 8.39 G)
+
+  * Texture system :
+    -  Average EWA samples / lookup : 6.86 (533.19 M / 77.71 M)
+    -  Cumulative MIP map memory allocations : 147.458 MiB
+    -  Filtered texture lookups : 24.14 % (6.62 G of 27.43 G)
+    -  Lookups with clamped anisotropy : 0.27 % (17.94 M of 6.62 G)
+------------------------------------------------------------

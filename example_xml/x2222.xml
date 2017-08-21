@@ -37,7 +37,7 @@
     </integrator>
 
     <sensor type="perspective">
-        <float name="farClip" value="1000"/>
+        <float name="farClip" value="5000"/>
         <float name="focusDistance" value="1264.51"/>
         <float name="fov" value="75"/>
         <string name="fovAxis" value="x"/>

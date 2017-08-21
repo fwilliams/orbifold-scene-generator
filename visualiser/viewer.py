@@ -34,6 +34,8 @@ class Window(QMainWindow):
         self.initUI()
         self._projectionType = 0
         self._showAxes = True;
+        self._showNormals = True;
+        self._showWires = True;
 
     def initUI(self):
         self.exitAction = QAction('&Exit', self)
@@ -53,10 +55,21 @@ class Window(QMainWindow):
         self.toggleShowAxesAction.triggered.connect(self.toggleShowAxes)
         self.toggleShowAxesAction.setChecked(True)
 
+        self.toggleShowNormalsAction = QAction('&Show Normals', self, checkable = True)
+        self.toggleShowNormalsAction.setToolTip('Toggle the normals')
+        self.toggleShowNormalsAction.triggered.connect(self.toggleShowNormals)
+        self.toggleShowNormalsAction.setChecked(True)
+
+        self.toggleShowWireAction = QAction('&Show Wires', self, checkable = True)
+        self.toggleShowWireAction.setToolTip('Toggle the wires')
+        self.toggleShowWireAction.triggered.connect(self.toggleShowWires)
+        self.toggleShowWireAction.setChecked(True)
+
         self.toolbar = self.addToolBar('ToolBar')
         self.toolbar.addAction(self.aboutAction)
         self.toolbar.addAction(self.exitAction)
-        # self.toolbar.addAction(self.changeProjectionAction)
+        self.toolbar.addAction(self.toggleShowWireAction)
+        self.toolbar.addAction(self.toggleShowNormalsAction)
         self.toolbar.addAction(self.toggleShowAxesAction)
 
         self.statusBar().showMessage('Ready') #only works for QMainWindow
@@ -92,6 +105,11 @@ class Window(QMainWindow):
     def toggleShowAxes(self, checked = False):
         self._showAxes = checked
 
+    def toggleShowNormals(self, checked = False):
+        self._showNormals = checked
+
+    def toggleShowWires(self, checked = False):
+        self._showWires = checked
 
     @property
     def projectionType(self):
@@ -100,6 +118,14 @@ class Window(QMainWindow):
     @property
     def showAxes(self):
         return self._showAxes
+
+    @property
+    def showNormals(self):
+        return self._showNormals
+
+    @property
+    def showWires(self):
+        return self._showWires
 
 class AboutDlg(QWidget):
     def __init__(self):
@@ -231,6 +257,14 @@ class Viewer(QtWidgets.QWidget):
     @property
     def flag_axes(self):
         return self._window.showAxes
+
+    @property
+    def flag_normals(self):
+        return self._window.showNormals
+
+    @property
+    def flag_wires(self):
+        return self._window.showWires
 
 app = QtWidgets.QApplication(sys.argv)
 # window = Window()

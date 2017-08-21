@@ -10,11 +10,11 @@
     </integrator>
 
     <sensor type="perspective">
-        <float name="farClip" value="10000"/>
+        <float name="farClip" value="1000"/>
         <float name="focusDistance" value="1264.51"/>
         <float name="fov" value="75"/>
         <string name="fovAxis" value="x"/>
-        <float name="nearClip" value="100"/>
+        <float name="nearClip" value="1"/>
         <transform name="toWorld">
             <lookat target="228.506, 340.574, 223.37" origin="228.465, 340.9, 224.31" up="0.120059, 0.94014, -0.31894"/>
         </transform>

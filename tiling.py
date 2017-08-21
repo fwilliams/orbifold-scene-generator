@@ -176,7 +176,7 @@ class PlanarReflectionGroup(object):
             last_transform = np.dot(utils.reflection_matrix(p), last_transform)
 
         #
-        # Compute the normals of the outer edges of the polygon (which bound the dihedral tile) and the distance from
+        # Compute the nor_mirror_planesmals of the outer edges of the polygon (which bound the dihedral tile) and the distance from
         # the center of the dihedral tile to each outer edge.
         # Use this information to construct the translational basis vectors for the group.
         #
