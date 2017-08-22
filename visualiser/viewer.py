@@ -34,8 +34,9 @@ class Window(QMainWindow):
         self.initUI()
         self._projectionType = 0
         self._showAxes = True;
-        self._showNormals = True;
-        self._showWires = True;
+        self._showNormals = False;
+        self._showWires = True
+        self._showSamples = False;
 
     def initUI(self):
         self.exitAction = QAction('&Exit', self)
@@ -58,17 +59,23 @@ class Window(QMainWindow):
         self.toggleShowNormalsAction = QAction('&Show Normals', self, checkable = True)
         self.toggleShowNormalsAction.setToolTip('Toggle the normals')
         self.toggleShowNormalsAction.triggered.connect(self.toggleShowNormals)
-        self.toggleShowNormalsAction.setChecked(True)
+        self.toggleShowNormalsAction.setChecked(False)
 
         self.toggleShowWireAction = QAction('&Show Wires', self, checkable = True)
         self.toggleShowWireAction.setToolTip('Toggle the wires')
         self.toggleShowWireAction.triggered.connect(self.toggleShowWires)
         self.toggleShowWireAction.setChecked(True)
 
+        self.toggleShowSampleAction = QAction('&Show Sample', self, checkable = True)
+        self.toggleShowSampleAction.setToolTip('Toggle the objects in prisms')
+        self.toggleShowSampleAction.triggered.connect(self.toggleShowSamples)
+        self.toggleShowSampleAction.setChecked(False)
+
         self.toolbar = self.addToolBar('ToolBar')
         self.toolbar.addAction(self.aboutAction)
         self.toolbar.addAction(self.exitAction)
         self.toolbar.addAction(self.toggleShowWireAction)
+        self.toolbar.addAction(self.toggleShowSampleAction)
         self.toolbar.addAction(self.toggleShowNormalsAction)
         self.toolbar.addAction(self.toggleShowAxesAction)
 
@@ -111,6 +118,9 @@ class Window(QMainWindow):
     def toggleShowWires(self, checked = False):
         self._showWires = checked
 
+    def toggleShowSamples(self, checked = False):
+        self._showSamples = checked
+
     @property
     def projectionType(self):
         return self._projectionType
@@ -126,6 +136,10 @@ class Window(QMainWindow):
     @property
     def showWires(self):
         return self._showWires
+
+    @property
+    def showSamples(self):
+        return self._showSamples
 
 class AboutDlg(QWidget):
     def __init__(self):
@@ -265,6 +279,10 @@ class Viewer(QtWidgets.QWidget):
     @property
     def flag_wires(self):
         return self._window.showWires
+
+    @property
+    def flag_Samples(self):
+        return self._window.showSamples
 
 app = QtWidgets.QApplication(sys.argv)
 # window = Window()

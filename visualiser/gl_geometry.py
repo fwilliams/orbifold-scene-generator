@@ -51,6 +51,25 @@ def draw_solid_prism(prism):
         glEnd()
         i += 1
 
+def draw_triangle(triangle):
+    i = 0
+    for f in triangle.faces:
+        glBegin(GL_TRIANGLE_FAN)
+        # for v in f:
+        glColor3f(1, 0, 0)
+        glNormal3f(*triangle.planes[i].normal3)
+        glVertex4f(*triangle.vertices[0])
+
+        # glNormal3f(*triangle.planes[i].normal3)
+        glColor3f(0, 1, 0)
+        glVertex4f(*triangle.vertices[1])
+
+        # glNormal3f(*triangle.planes[i].normal3)
+        glColor3f(0, 0, 1)
+        glVertex4f(*triangle.vertices[2])
+
+        glEnd()
+        i += 1
 
 def draw_wire_prism(prism):
     glBegin(GL_LINES)
@@ -58,6 +77,22 @@ def draw_wire_prism(prism):
         glVertex4f(*prism.vertices[e[0]])
         glVertex4f(*prism.vertices[e[1]])
     glEnd()
+
+def draw_wire_triangle(tri):
+    glBegin(GL_LINES)
+    # for e in tri.edges:
+    glColor3f(1, 0, 0)
+    glVertex4f(*tri.vertices[tri.edges[0][0]])
+    glVertex4f(*tri.vertices[tri.edges[0][1]])
+
+    glColor3f(0, 1, 0)
+    glVertex4f(*tri.vertices[tri.edges[1][0]])
+    glVertex4f(*tri.vertices[tri.edges[1][1]])
+
+    glColor3f(0, 0, 1)
+    glVertex4f(*tri.vertices[tri.edges[2][0]])
+    glVertex4f(*tri.vertices[tri.edges[2][1]])
+    # glEnd()
 
 
 def draw_prism_normals(prism, scale):

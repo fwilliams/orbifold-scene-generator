@@ -19,7 +19,7 @@
         <string name="fovAxis" value="x"/>
         <float name="nearClip" value="100"/>
         <transform name="toWorld">
-            <lookat target="228.506, 340.574, 223.37" origin="228.465, 340.9, 224.31" up="0.120059, 0.94014, -0.31894"/>
+            <lookat target="228.506, 340.574, 223.37" origin="228.465, 340.9, 3224.31" up="0.120059, 0.94014, -0.31894"/>
         </transform>
 
         <sampler type="independent">

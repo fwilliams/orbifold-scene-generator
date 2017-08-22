@@ -7,6 +7,7 @@ from lxml import etree
 import scene_parsing
 import scene_parsing as sp
 import tiling
+from geometry import shapes, utils
 import time
 from visualiser import gl_geometry
 from visualiser.viewer import Viewer
@@ -49,6 +50,7 @@ def init(viewer):
     glNewList(geometry_display_list, GL_COMPILE)
     glPushAttrib(GL_ENABLE_BIT)
     glEnable(GL_LIGHTING)
+
     for t in tilemap.values():
         if t[2] == 1:
             color = np.array((0.5, 0.5, 0.5))
@@ -62,6 +64,47 @@ def init(viewer):
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color)
         gl_geometry.draw_solid_prism(t[0])
 
+    glDisable(GL_DEPTH_TEST)
+    glDisable(GL_LIGHTING)
+
+    glPopAttrib(GL_ENABLE_BIT)
+    glEndList()
+
+    global normal_display_list
+    normal_display_list = glGenLists(1)
+    glNewList(normal_display_list, GL_COMPILE)
+    glPushAttrib(GL_ENABLE_BIT)
+
+    for t in tilemap.values():
+        glColor3f(1, 1, 1)
+        gl_geometry.draw_prism_normals(t[0], 100.0)
+
+    glPopAttrib(GL_ENABLE_BIT)
+    glEndList()
+
+    global wire_display_list
+    wire_display_list = glGenLists(1)
+    glNewList(wire_display_list, GL_COMPILE)
+    glPushAttrib(GL_ENABLE_BIT)
+
+    glColor3f(1, 1, 1)
+    for t in tilemap.values():
+        gl_geometry.draw_wire_prism(t[0])
+
+
+    glPopAttrib(GL_ENABLE_BIT)
+    glEndList()
+
+    global sample_display_list
+    sample_display_list = glGenLists(1)
+    glNewList(sample_display_list, GL_COMPILE)
+    glPushAttrib(GL_ENABLE_BIT)
+
+    for t in tilemap.values():
+        # tri = shapes.Triangle([230, 100, 50], [330, 100, 50], [280, 300, 150])
+        tri = shapes.Triangle([10, 100, 50], [110, 100, 50], [55, 300, 150])
+        tri.transform(t[1])
+        gl_geometry.draw_triangle(tri)
 
     glPopAttrib(GL_ENABLE_BIT)
     glEndList()
@@ -87,15 +130,30 @@ def draw(viewer):
     glPushAttrib(GL_ENABLE_BIT)
     glDisable(GL_DEPTH_TEST)
     glDisable(GL_LIGHTING)
+    glShadeModel(GL_SMOOTH)
 
-    for t in tilemap.values():
-        if gl_viewer.flag_normals:
-            glColor3f(1, 1, 1)
-            gl_geometry.draw_prism_normals(t[0], 100.0)
+    if gl_viewer.flag_normals:
+        glCallList(normal_display_list)
 
-        if gl_viewer.flag_wires:
-            glColor3f(1, 1, 1)
-            gl_geometry.draw_wire_prism(t[0])
+    if gl_viewer.flag_wires:
+        glCallList(wire_display_list)
+
+    if gl_viewer.flag_Samples:
+        glCallList(sample_display_list)
+
+    # for t in tilemap.values():
+    #     if gl_viewer.flag_normals:
+    #         glColor3f(1, 1, 1)
+    #         gl_geometry.draw_prism_normals(t[0], 100.0)
+    #
+    #     if gl_viewer.flag_wires:
+    #         glColor3f(1, 1, 1)
+    #         gl_geometry.draw_wire_prism(t[0])
+    #
+    #     if gl_viewer.flag_Samples:
+    #         tri = shapes.Triangle([100, 100, 100], [200, 100, 100], [100, 300, 0])
+    #         tri.transform(t[1])
+    #         gl_geometry.draw_triangle(tri)
 
     if gl_viewer.flag_axes:
         gl_geometry.draw_axes((10000, 10000, 10000))
@@ -129,16 +187,25 @@ argparser = argparse.ArgumentParser()
 # argparser.add_argument("floor", help="The flag used to generate floor reflections", type = bool, default = False)
 args = argparser.parse_args()
 
-args.type = "xx"
-args.filename = "./example_xml/xxx.xml"
-args.radius = 4
-args.overlap = 1
+# args.type = "xx"
+# args.filename = "./example_xml/xxx.xml"
+# args.type = "x2222"
+# args.filename = "./example_xml/x2222.xml"
+args.type = "x442"
+args.filename = "./example_xml/x442.xml"
+# args.type = "x333"
+# args.filename = "./example_xml/x333.xml"
+# args.type = "x632"
+# args.filename = "./example_xml/x632.xml"
+args.radius = 10
+args.vradius = 10
+args.overlap = 0
 args.scale = 560
 args.bidir = False;
 args.visualize = True;
 args.ceiling = True;
 args.floor = True;
-
+args.height = 1000;
 
 if args.type == "xx":
     group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),(0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
@@ -179,14 +246,27 @@ else:
                       "where N is a positive integer." % args.type
 
 
+print("Generating fds on R2...")
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 
-# if (args.ceiling or args.floor) and args.type == "xx":
-#     vgroup = tiling.FriezeReflectionGroup(args.scale, (0, 0, 1), (0, 0, 0.5*args.scale),(0, args.scale, 0.5*args.scale))
-#     # vbase_kernel = tiling.vLineKernel(args.radius, (0,0), vgroup, group, kt, base_kernel)
-#     vbase_kernel = tiling.vLineKernel(args.radius, 0, vgroup, group, kt, base_kernel)
-#     kt = tiling.vKernelTiling(base_kernel, frustum, args.overlap, kt, args.ceiling, args.floor, vbase_kernel)
+if args.ceiling or args.floor:
+    print("Generating fds on R3...")
+
+    vgroup = tiling.FriezeReflectionGroup(args.height, (0, 0, 1), (0, args.height, 0),(0, 0, 0))
+    if args.floor and not args.ceiling:
+        vgroup = tiling.FriezeReflectionGroup(args.height, (0, 0, 1), (0, 0, 0),(0, args.height, 0))
+
+    if args.type == "xx":
+        vbase_kernel = tiling.vLineKernel(args.vradius, (0,0), vgroup, base_kernel, args.ceiling, args.floor)
+
+    elif args.type == "x2222" or args.type == "x442":
+        vbase_kernel = tiling.vSquareKernel(args.vradius, (0,0,0), vgroup, base_kernel, args.ceiling, args.floor)
+
+    elif args.type == "x632" or args.type == "x333":
+        vbase_kernel = tiling.vHexKernel(args.vradius, (0, 0, 0), vgroup, base_kernel, args.ceiling, args.floor)
+
+    kt = tiling.KernelTiling(vbase_kernel, frustum, args.overlap)
 
 geometry_display_list = None
 
