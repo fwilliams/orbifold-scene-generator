@@ -33,10 +33,10 @@ class Window(QMainWindow):
         super(Window, self).__init__()
         self.initUI()
         self._projectionType = 0
-        self._showAxes = True;
-        self._showNormals = False;
-        self._showWires = True
-        self._showSamples = False;
+        self._showAxes = True
+        self._showNormals = False
+        self._showWires = False
+        self._showSamples = False
 
     def initUI(self):
         self.exitAction = QAction('&Exit', self)
@@ -64,7 +64,7 @@ class Window(QMainWindow):
         self.toggleShowWireAction = QAction('&Show Wires', self, checkable = True)
         self.toggleShowWireAction.setToolTip('Toggle the wires')
         self.toggleShowWireAction.triggered.connect(self.toggleShowWires)
-        self.toggleShowWireAction.setChecked(True)
+        self.toggleShowWireAction.setChecked(False)
 
         self.toggleShowSampleAction = QAction('&Show Sample', self, checkable = True)
         self.toggleShowSampleAction.setToolTip('Toggle the objects in prisms')

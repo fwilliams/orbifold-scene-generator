@@ -164,7 +164,7 @@
 
 	<shape type="shapegroup" id="scene">
 	
-		<shape type="obj">
+		<!--<shape type="obj">
 			<string name="filename" value="meshes/cbox_floor_632.obj"/>
 
 			<ref id="Al"/>
@@ -174,7 +174,7 @@
 			<string name="filename" value="meshes/cbox_ceiling_632.obj"/>
 
 			<ref id="Al"/>
-		</shape>
+		</shape> -->
 
 <!-- 		<shape type="obj">
 			<string name="filename" value="meshes/cbox_front.obj"/>
