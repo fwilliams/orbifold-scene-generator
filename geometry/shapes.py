@@ -121,19 +121,7 @@ class Prism(Polyhedron):
         # Verify that all the input vertices are of dimension 2 or 3. If they are of dimension 2 store them in 3D.
         for a in args:
             pt = np.array(a)
-
-            if pt.shape != input_shape:
-                raise ValueError("Prism base vertices do not all have the same dimension")
-
-            if pt.shape == (2,):
-                pt = np.array((pt[0], pt[1], 0.0, 1.0))
-            elif pt.shape == (3,):
-                pt = np.array((pt[0], pt[1], pt[2], 1.0))
-            elif pt.shape == (4,):
-                pt = utils.make_projective_point(pt)
-            else:
-                raise ValueError("Prism cannot be constructed from non 2d, 3d or projective 3d points. Got %s" % pt)
-
+            pt = utils.make_legal_point(pt, input_shape)
             self._vertices.append(pt)
 
         self._faces = [tuple([i for i in range(len(self._vertices))])]
@@ -189,19 +177,7 @@ class Frustum(Polyhedron):
         # Verify that all the input vertices are of dimension 2 or 3. If they are of dimension 2 store them in 3D.
         for a in args:
             pt = np.array(a)
-
-            if pt.shape != input_shape:
-                raise ValueError("Frustum base vertices do not all have the same dimension")
-
-            if pt.shape == (2,):
-                pt = np.array((pt[0], pt[1], 0.0, 1.0))
-            elif pt.shape == (3,):
-                pt = np.array((pt[0], pt[1], pt[2], 1.0))
-            elif pt.shape == (4,):
-                pt = utils.make_projective_point(pt)
-            else:
-                raise ValueError("Prism cannot be constructed from non 2d, 3d or projective 3d points. Got %s" % pt)
-
+            pt = utils.make_legal_point(pt, input_shape)
             self._vertices.append(pt)
 
         self._faces = [tuple([i for i in range(len(self._vertices))])]
@@ -447,19 +423,7 @@ class Triangle(Polyhedron):
         # Verify that all the input vertices are of dimension 2 or 3. If they are of dimension 2 store them in 3D.
         for a in args:
             pt = np.array(a)
-
-            if pt.shape != input_shape:
-                raise ValueError("Triangle base vertices do not all have the same dimension")
-
-            if pt.shape == (2,):
-                pt = np.array((pt[0], pt[1], 0.0, 1.0))
-            elif pt.shape == (3,):
-                pt = np.array((pt[0], pt[1], pt[2], 1.0))
-            elif pt.shape == (4,):
-                pt = utils.make_projective_point(pt)
-            else:
-                raise ValueError("Prism cannot be constructed from non 2d, 3d or projective 3d points. Got %s" % pt)
-
+            pt = utils.make_legal_point(pt, input_shape)
             self._vertices.append(pt)
 
         self._faces = [tuple([i for i in range(len(self._vertices))])]

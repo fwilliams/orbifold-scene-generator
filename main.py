@@ -54,7 +54,7 @@ def init(viewer):
         elif t[2] == 2:
             color = np.array((0.9, 0.9, 0.0))
         elif t[2] == 3:
-            color = np.array((0.0, 0.7, 0.0))
+            color = np.array((0.9, 0.7, 0.0))
         else:
             color = np.array((0.9, 0.1, 0.1))
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0.7, 0.7, 0.7))
@@ -157,27 +157,27 @@ def resize(viewer):
     glMatrixMode(GL_MODELVIEW)
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
-argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
-                                    "where N is a positive integer.")
-argparser.add_argument("radius", help="The kernel radius", type=int)
-argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
-argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
-argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
-argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
-                                                 "incompleteness images", action="store_true")
-argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
-argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
-argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
-argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
-argparser.add_argument("--vradius", help="The vertical kernel radius (default:10)", type = int, default = 10)
+# argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
+# argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
+#                                     "where N is a positive integer.")
+# argparser.add_argument("hradius", help="The kernel horizontal radius", type=int)
+# argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
+# argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
+# argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
+# argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
+#                                                  "incompleteness images", action="store_true")
+# argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
+# argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
+# argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
+# argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
+# argparser.add_argument("--vradius", help="The kernel vertical radius (default:10)", type = int, default = 10)
 args = argparser.parse_args()
 
 # args.type = "xx"
-#args.filename = "./example_xml/xxx.xml"
+# args.filename = "./example_xml/xxx.xml"
 # args.filename = "./example_xml/toilet_xx_opath.xml"
-# args.type = "x2222"
-# args.filename = "./example_xml/x2222.xml"
+args.type = "x2222"
+args.filename = "./example_xml/x2222.xml"
 # args.type = "x442"
 # args.filename = "./example_xml/x442.xml"
 # args.type = "x333"
@@ -188,39 +188,46 @@ args = argparser.parse_args()
 # args.filename = "./example_xml/pumpkin_x632_opath.xml"
 # args.type = "x333"
 # args.filename = "./example_xml/glass_x333_opath.xml"
-# args.radius = 15
-# args.vradius = 10
-# args.overlap = 0
-# args.scale = 560
-# args.height = 560;
-# args.bidir = False;
-# args.visualize = True;
-# args.ceiling = True;
-# args.floor = True;
+args.hradius = 4
+args.vradius = 4
+args.overlap = 1
+args.scale = 560
+args.height = 1000;
+args.bidir = False;
+args.visualize = True;
+args.ceiling = True;
+args.floor = True;
+args.inc = False;
+
+
+if args.floor and not args.ceiling:
+    #if only floor mirror, vertical translational kernel should be built based on floor mirror
+    vgroup = tiling.FriezeReflectionGroup(args.height, (0, 0, 1), (0, 0, 0),(0, args.height, 0))
+else:
+    # otherwise, the translational kernel should be built based on ceiling floor
+    vgroup = tiling.FriezeReflectionGroup(args.height, (0, 0, 1), (0, args.height, 0),(0, 0, 0))
 
 
 if args.type == "xx":
-    group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),(0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
-    base_kernel = tiling.LineKernel(args.radius, 0, group)
+    hgroup = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),(0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
+    base_kernel = tiling.LineKernel(args.hradius, args.vradius, (0,0), hgroup, vgroup, args.ceiling, args.floor)
+
 elif args.type == "x2222":
     # *2222
-    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
-                                         (args.scale, 0, 0), (args.scale, 0, args.scale), (0, 0, args.scale))
-    base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
+    hgroup = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),(args.scale, 0, 0), (args.scale, 0, args.scale), (0, 0, args.scale))
+    base_kernel = tiling.SquareKernel(args.hradius, args.vradius, (0, 0, 0), hgroup, vgroup, args.ceiling, args.floor)
 elif args.type == "x442":
-    # *2222
-    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
-    base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
+    # *422
+    hgroup = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
+    base_kernel = tiling.SquareKernel(args.hradius, args.vradius, (0, 0, 0), hgroup, vgroup, args.ceiling, args.floor)
 elif args.type == "x632":
     # *632
-    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
-                                         (0.5*args.scale, 0, 0), (0, 0, args.scale * np.sqrt(3.0) / 2.0))
-    base_kernel = tiling.HexKernel(args.radius, (0, 0), group)
+    hgroup = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),(0.5*args.scale, 0, 0), (0, 0, args.scale * np.sqrt(3.0) / 2.0))
+    base_kernel = tiling.HexKernel(args.hradius, args.vradius, (0, 0, 0), hgroup, vgroup, args.ceiling, args.floor)
 elif args.type == "x333":
     # *333
-    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
-                                         (args.scale, 0, 0), (0.5*args.scale, 0, args.scale * np.sqrt(3.0) / 2.0))
-    base_kernel = tiling.HexKernel(args.radius, (0, 0), group)
+    hgroup = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),(args.scale, 0, 0), (0.5*args.scale, 0, args.scale * np.sqrt(3.0) / 2.0))
+    base_kernel = tiling.HexKernel(args.hradius, args.vradius, (0, 0, 0), hgroup, vgroup, args.ceiling, args.floor)
 else:
     if args.type.startswith("x"):
         try:
@@ -238,52 +245,34 @@ else:
                       "where N is a positive integer." % args.type
 
 
-print("Generating fds on R2...")
+print("Generating fds on scenes...")
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
-
-if args.ceiling or args.floor:
-    print("Generating fds on R3...")
-
-    vgroup = tiling.FriezeReflectionGroup(args.height, (0, 0, 1), (0, args.height, 0),(0, 0, 0))
-    if args.floor and not args.ceiling:
-        vgroup = tiling.FriezeReflectionGroup(args.height, (0, 0, 1), (0, 0, 0),(0, args.height, 0))
-
-    if args.type == "xx":
-        vbase_kernel = tiling.vLineKernel(args.vradius, (0,0), vgroup, base_kernel, args.ceiling, args.floor)
-
-    elif args.type == "x2222" or args.type == "x442":
-        vbase_kernel = tiling.vSquareKernel(args.vradius, (0,0,0), vgroup, base_kernel, args.ceiling, args.floor)
-
-    elif args.type == "x632" or args.type == "x333":
-        vbase_kernel = tiling.vHexKernel(args.vradius, (0, 0, 0), vgroup, base_kernel, args.ceiling, args.floor)
-
-    kt = tiling.KernelTiling(vbase_kernel, frustum, args.overlap)
 
 geometry_display_list = None
 normal_display_list = None
 sample_display_list = None
 wire_display_list = None
 
-output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
-output_dir = os.path.realpath(output_dir)
-os.mkdir(output_dir)
-
-i = 0
-for kernel in kt.visible_kernels:
-    print("Generating the scene data for kernel %d ..." % i)
-    scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
-    with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
-        f.write(etree.tostring(scene_doc, pretty_print=True))
-
-    if args.inc:
-        print("Generating the inc scene data...")
-        inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
-        with open(os.path.join(output_dir, "inc_img_%d_clr.xml" % i), "w+") as f:
-            f.write(etree.tostring(inc_doc, pretty_print=True))
-    i += 1
-
-print("Saved scene data to %s" % output_dir)
+# output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
+# output_dir = os.path.realpath(output_dir)
+# os.mkdir(output_dir)
+#
+# i = 0
+# for kernel in kt.visible_kernels:
+#     print("Generating the scene data for kernel %d ..." % i)
+#     scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
+#     with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
+#         f.write(etree.tostring(scene_doc, pretty_print=True))
+#
+#     if args.inc:
+#         print("Generating the inc scene data...")
+#         inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
+#         with open(os.path.join(output_dir, "inc_img_%d_clr.xml" % i), "w+") as f:
+#             f.write(etree.tostring(inc_doc, pretty_print=True))
+#     i += 1
+#
+# print("Saved scene data to %s" % output_dir)
 
 if args.visualize:
     gl_viewer = Viewer()
