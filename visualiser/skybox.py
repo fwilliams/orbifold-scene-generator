@@ -22,6 +22,7 @@ class Skybox(object):
         glLoadMatrixf(rotation_mat)
         glBegin(GL_QUADS)
 
+        #left
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, -1)
         glVertex3f(-1, -1, 1)
@@ -29,6 +30,7 @@ class Skybox(object):
         glVertex3f(-1, 1, 1)
         glVertex3f(-1, 1, -1)
 
+        #right
         glColor3f(*self._bottom_color)
         glVertex3f(1, -1, -1)
         glVertex3f(1, -1, 1)
@@ -36,18 +38,21 @@ class Skybox(object):
         glVertex3f(1, 1, 1)
         glVertex3f(1, 1, -1)
 
+        #bottom
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, -1)
         glVertex3f(1, -1, -1)
         glVertex3f(1, -1, 1)
         glVertex3f(-1, -1, 1)
 
+        #top
         glColor3f(*self._top_color)
         glVertex3f(-1, 1, -1)
         glVertex3f(1, 1, -1)
         glVertex3f(1, 1, 1)
         glVertex3f(-1, 1, 1)
 
+        #back
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, -1)
         glVertex3f(1, -1, -1)
@@ -55,6 +60,7 @@ class Skybox(object):
         glVertex3f(1, 1, -1)
         glVertex3f(-1, 1, -1)
 
+        #front
         glColor3f(*self._bottom_color)
         glVertex3f(-1, -1, 1)
         glVertex3f(1, -1, 1)
