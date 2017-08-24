@@ -157,27 +157,27 @@ def resize(viewer):
     glMatrixMode(GL_MODELVIEW)
 
 argparser = argparse.ArgumentParser()
-# argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
-# argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
-#                                     "where N is a positive integer.")
-# argparser.add_argument("hradius", help="The kernel horizontal radius", type=int)
-# argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
-# argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
-# argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
-# argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
-#                                                  "incompleteness images", action="store_true")
-# argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
-# argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
-# argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
-# argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
-# argparser.add_argument("--vradius", help="The kernel vertical radius (default:10)", type = int, default = 10)
+argparser.add_argument("filename", help="The name of the scene file to render.", type=str)
+argparser.add_argument("type", help="The type of the scene. Must be one of xx x2222 x442 x642 x333 or xN, "
+                                    "where N is a positive integer.")
+argparser.add_argument("hradius", help="The kernel horizontal radius", type=int)
+argparser.add_argument("overlap", help="The amout that adjacent kernels overlap", type=int)
+argparser.add_argument("scale", help="args.scale factor for the scene.", type=float, default=560.0)
+argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
+argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
+                                                 "incompleteness images", action="store_true")
+argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
+argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
+argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
+argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
+argparser.add_argument("--vradius", help="The kernel vertical radius (default:10)", type = int, default = 10)
 args = argparser.parse_args()
 
 # args.type = "xx"
 # args.filename = "./example_xml/xxx.xml"
 # args.filename = "./example_xml/toilet_xx_opath.xml"
-args.type = "x2222"
-args.filename = "./example_xml/x2222.xml"
+# args.type = "x2222"
+# args.filename = "./example_xml/x2222.xml"
 # args.type = "x442"
 # args.filename = "./example_xml/x442.xml"
 # args.type = "x333"
@@ -188,16 +188,16 @@ args.filename = "./example_xml/x2222.xml"
 # args.filename = "./example_xml/pumpkin_x632_opath.xml"
 # args.type = "x333"
 # args.filename = "./example_xml/glass_x333_opath.xml"
-args.hradius = 4
-args.vradius = 4
-args.overlap = 1
-args.scale = 560
-args.height = 1000;
-args.bidir = False;
-args.visualize = True;
-args.ceiling = True;
-args.floor = True;
-args.inc = False;
+# args.hradius = 20
+# args.vradius = 10
+# args.overlap = 1
+# args.scale = 560
+# args.height = 1000;
+# args.bidir = False;
+# args.visualize = True;
+# args.ceiling = False;
+# args.floor = False;
+# args.inc = True;
 
 
 if args.floor and not args.ceiling:
@@ -245,7 +245,10 @@ else:
                       "where N is a positive integer." % args.type
 
 
-print("Generating fds on scenes...")
+split_paths = os.path.split(args.filename)
+print("Generating fds for scenes %s..." %split_paths[1])
+filename = os.path.splitext(split_paths[1])
+
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 
@@ -254,25 +257,30 @@ normal_display_list = None
 sample_display_list = None
 wire_display_list = None
 
-# output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
-# output_dir = os.path.realpath(output_dir)
-# os.mkdir(output_dir)
-#
-# i = 0
-# for kernel in kt.visible_kernels:
-#     print("Generating the scene data for kernel %d ..." % i)
-#     scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
-#     with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
-#         f.write(etree.tostring(scene_doc, pretty_print=True))
-#
-#     if args.inc:
-#         print("Generating the inc scene data...")
-#         inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
-#         with open(os.path.join(output_dir, "inc_img_%d_clr.xml" % i), "w+") as f:
-#             f.write(etree.tostring(inc_doc, pretty_print=True))
-#     i += 1
-#
-# print("Saved scene data to %s" % output_dir)
+output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
+output_dir = os.path.realpath(output_dir)
+os.mkdir(output_dir)
+
+i = 0
+for kernel in kt.visible_kernels:
+    print("Generating the scene data for kernel %d ..." % i)
+    with etree.xmlfile(os.path.join(output_dir, "%s_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+        sp.gen_scene_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf)
+    # scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
+    # with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
+    #     f.write(etree.tostring(scene_doc, pretty_print=True))
+
+    if args.inc:
+        print("Generating the inc scene data for kernel %d ..." % i)
+        with etree.xmlfile(os.path.join(output_dir, "%s_inc_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+            sp.gen_incompleteness_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf, use_bidir=args.bidir,)
+
+        # inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
+        # with open(os.path.join(output_dir, "inc_img_%d_clr.xml" % i), "w+") as f:
+        #     f.write(etree.tostring(inc_doc, pretty_print=True))
+    i += 1
+
+print("Saved scene data to %s" % output_dir)
 
 if args.visualize:
     gl_viewer = Viewer()
