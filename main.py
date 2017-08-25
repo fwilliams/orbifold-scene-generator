@@ -208,7 +208,11 @@ os.mkdir(output_dir)
 
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
+
 geometry_display_list = None
+normal_display_list = None
+sample_display_list = None
+wire_display_list = None
 
 print("Generating scene data...")
 i = 0
