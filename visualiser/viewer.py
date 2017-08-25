@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
-
+from PyQt5.QtWidgets import QWidget, QCheckBox, QApplication, QHBoxLayout,QMainWindow,QToolTip,QPushButton, QMessageBox,QAction,QTextEdit,QLabel, qApp
 import camera_control
 import gl_geometry
 from skybox import Skybox
@@ -13,17 +13,79 @@ except ImportError:
     sys.exit(1)
 
 
-class Window(QtWidgets.QWidget):
+class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        self.initUI()
+        self._showAxes = True
+        self._showNormals = False
+        self._showWires = False
+        self._showSamples = False
 
-        self.gl_widget = GLWidget()
+    def initUI(self):
 
-        main_layout = QtWidgets.QHBoxLayout()
-        main_layout.addWidget(self.gl_widget)
+        self.toggleShowAxesAction = QAction('&Show Axes', self, checkable = True)
+        self.toggleShowAxesAction.setToolTip('Toggle the axes')
+        self.toggleShowAxesAction.triggered.connect(self.toggleShowAxes)
+        self.toggleShowAxesAction.setChecked(True)
 
-        self.setLayout(main_layout)
-        self.setWindowTitle("Hello GL")
+        self.toggleShowNormalsAction = QAction('&Show Normals', self, checkable = True)
+        self.toggleShowNormalsAction.setToolTip('Toggle the normals')
+        self.toggleShowNormalsAction.triggered.connect(self.toggleShowNormals)
+        self.toggleShowNormalsAction.setChecked(False)
+
+        self.toggleShowWireAction = QAction('&Show Wires', self, checkable = True)
+        self.toggleShowWireAction.setToolTip('Toggle the wires')
+        self.toggleShowWireAction.triggered.connect(self.toggleShowWires)
+        self.toggleShowWireAction.setChecked(False)
+
+        self.toggleShowSampleAction = QAction('&Show Sample', self, checkable = True)
+        self.toggleShowSampleAction.setToolTip('Toggle the objects in prisms')
+        self.toggleShowSampleAction.triggered.connect(self.toggleShowSamples)
+        self.toggleShowSampleAction.setChecked(False)
+
+        self.toolbar = self.addToolBar('ToolBar')
+        self.toolbar.addAction(self.toggleShowWireAction)
+        self.toolbar.addAction(self.toggleShowSampleAction)
+        self.toolbar.addAction(self.toggleShowNormalsAction)
+        self.toolbar.addAction(self.toggleShowAxesAction)
+
+        self.setWindowTitle("GL Viewer")
+
+    def setGLWidget(self, gl_widget):
+        self.setCentralWidget(gl_widget)
+
+    def toggleShowAxes(self, checked = False):
+        self._showAxes = checked
+
+    def toggleShowNormals(self, checked = False):
+        self._showNormals = checked
+
+    def toggleShowWires(self, checked = False):
+        self._showWires = checked
+
+    def toggleShowSamples(self, checked = False):
+        self._showSamples = checked
+
+    @property
+    def projectionType(self):
+        return self._projectionType
+
+    @property
+    def showAxes(self):
+        return self._showAxes
+
+    @property
+    def showNormals(self):
+        return self._showNormals
+
+    @property
+    def showWires(self):
+        return self._showWires
+
+    @property
+    def showSamples(self):
+        return self._showSamples
 
 
 class UserPluggableEventFilter(QtCore.QObject):
@@ -97,11 +159,8 @@ class Viewer(QtWidgets.QWidget):
 
         self.gl_widget = GLWidget(size=size)
 
-        main_layout = QtWidgets.QHBoxLayout()
-        main_layout.addWidget(self.gl_widget)
-
-        self.setLayout(main_layout)
-        self.setWindowTitle(title)
+        self._window = Window()
+        self._window.setGLWidget(self.gl_widget)
 
     def set_draw_function(self, draw_func):
         self.gl_widget.draw_callback = draw_func
@@ -116,8 +175,32 @@ class Viewer(QtWidgets.QWidget):
         self.gl_widget.user_event_callback.event_callback = event_func
 
     def run(self):
-        self.show()
+        self._window.show()
         sys.exit(app.exec_())
+
+    @property
+    def mywindow(self):
+        return self._window
+
+    @property
+    def flag_projection(self):
+        return self._window.projectionType
+
+    @property
+    def flag_axes(self):
+        return self._window.showAxes
+
+    @property
+    def flag_normals(self):
+        return self._window.showNormals
+
+    @property
+    def flag_wires(self):
+        return self._window.showWires
+
+    @property
+    def flag_Samples(self):
+        return self._window.showSamples
 
 app = QtWidgets.QApplication(sys.argv)
 
