@@ -400,7 +400,7 @@ class LineKernel(object):
         for i in range(self._diameter):
             pos = np.array((i - self._radius)) + np.array(self._center)
             translate = utils.translation_matrix(
-                pos * self._group.translational_subgroup_basis[1 if (pos % 2) == 0 else 0])
+                abs(pos) * self._group.translational_subgroup_basis[1 if pos > 0 else 0])
 
             prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
 
