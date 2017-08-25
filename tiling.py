@@ -8,7 +8,7 @@ EPSILON = 1e-8
 
 
 class FriezeReflectionGroup(object):
-    def __init__(self, height, up, mirror1_ctr, mirror2_ctr):
+    def __init__(self, height, up, mirror1_ctr, mirror2_ctr, flag_ceiling, flag_floor):
         ctr1 = utils.make_projective_point(mirror1_ctr)
         ctr2 = utils.make_projective_point(mirror2_ctr)
         up = utils.make_projective_vector(up)
@@ -25,8 +25,26 @@ class FriezeReflectionGroup(object):
             shapes.Plane(ctr1, ctr1 + up_proj, ctr1 + right_proj),
             shapes.Plane(ctr2, ctr2 + up_proj, ctr2 + right_proj)
         ]
+
+        #add floor mirror plane if we only have floor mirror else add ceiling mirror plane
+        if not flag_ceiling and flag_floor:
+            self._vmirror_planes = shapes.Plane((0, 0, 1), (0, 0, 0), (1, 0, 0))
+        else:
+            self._vmirror_planes = shapes.Plane((0, height, 1), (0, height, 0), (1, height, 0))
+
         self._dihedral_transforms = [np.eye(4), utils.reflection_matrix(self._mirror_planes[0])]
-        self._translational_basis = [2*m1n*width, 2*m2n*width]
+
+        #there are 4 fds in tfd with ceiling or floor mirror
+        if flag_ceiling or flag_floor:
+            self._dihedral_transforms = []
+            last_transform = np.identity(4)
+            for i in range(4):
+                self._dihedral_transforms.append(last_transform)
+                p = copy.deepcopy([self._mirror_planes[0], self._vmirror_planes][i % 2])
+                p.transform(last_transform)
+                last_transform = np.dot(utils.reflection_matrix(p), last_transform)
+
+        self._translational_basis = [2*m1n*width, 2*m2n*width, 2*height*up_proj]
         b = ctr1 - up_proj * height * 0.5
 
         self._vertices = [b - right_proj*width*0.5, b + right_proj*width*0.5,
@@ -369,7 +387,7 @@ class HexKernel(object):
 
 
 class LineKernel(object):
-    def __init__(self, radius, center, group):
+    def __init__(self, radius, vradius, center, group, flag_ceiling, flag_floor):
         if group.n not in [1]:
             raise ValueError("Cannot construct a line kernel from planar group with dihedral "
                              "subgroup of order not 1")
@@ -377,14 +395,18 @@ class LineKernel(object):
         self._radius = radius
         self._diameter = 2 * radius + 1
         self._center = np.array(center)
+        self._vradius = vradius
+        self._vdiameter = 2 * vradius + 1 if flag_ceiling or flag_floor else 1
+        self._flag_ceiling = flag_ceiling
+        self._flag_floor = flag_floor
 
     def __str__(self):
         return "Line Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
         for direction in 1, -1:
-            new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
-            yield LineKernel(self._radius, new_ctr, self._group)
+            new_ctr = self._center[0] + np.array(direction) * (self._diameter - overlap)
+            yield LineKernel(self._radius, self._vradius, np.array((new_ctr, 0)), self._group, self._flag_ceiling, self._flag_floor )
 
     @property
     def fundamental_domains(self):
@@ -398,14 +420,14 @@ class LineKernel(object):
     @property
     def translational_fundamental_domains(self):
         for i in range(self._diameter):
-            pos = np.array((i - self._radius)) + np.array(self._center)
+            pos = np.array((i - self._radius)) + np.array(self._center[0])
             translate = utils.translation_matrix(
                 abs(pos) * self._group.translational_subgroup_basis[1 if pos > 0 else 0])
 
             prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
 
             prism.transform(translate)
-            yield pos, translate, prism
+            yield np.array([pos, 0]), translate, prism
 
     @property
     def translational_fundamental_domain_transforms(self):

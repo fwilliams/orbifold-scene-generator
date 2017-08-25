@@ -162,12 +162,16 @@ argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are g
 argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
                                                  "incompleteness images", action="store_true")
 argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
+argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
+argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
+argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
+argparser.add_argument("--vradius", help="The kernel vertical radius (default:10)", type = int, default = 10)
 args = argparser.parse_args()
 
 if args.type == "xx":
-    group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
-                                         (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
-    base_kernel = tiling.LineKernel(args.radius, 0, group)
+    group = tiling.FriezeReflectionGroup(args.height, (0, 1, 0),
+                                         (0, 0.5*args.height, 0), (0, 0.5*args.height, args.scale), args.ceiling, args.floor)
+    base_kernel = tiling.LineKernel(args.radius, args.vradius, (0,0), group, args.ceiling, args.floor)
 elif args.type == "x2222":
     # *2222
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
@@ -203,34 +207,34 @@ else:
         assert False, "Invalid scene type, %s. Must be one of xx x2222 x442 x642 x333 or xN, " \
                       "where N is a positive integer." % args.type
 
-output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
-output_dir = os.path.realpath(output_dir)
-os.mkdir(output_dir)
-
-split_paths = os.path.split(args.filename)
-print("Generating fds for scenes %s..." %split_paths[1])
-filename = os.path.splitext(split_paths[1])
-
+# output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
+# output_dir = os.path.realpath(output_dir)
+# os.mkdir(output_dir)
+#
+# split_paths = os.path.split(args.filename)
+# print("Generating fds for scenes %s..." %split_paths[1])
+# filename = os.path.splitext(split_paths[1])
+#
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 geometry_display_list = None
-
-print("Generating scene data...")
-i = 0
-for kernel in kt.visible_kernels:
-
-    print("Generating the scene data for kernel %d ..." % i)
-    with etree.xmlfile(os.path.join(output_dir, "%s_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
-        sp.gen_scene_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf)
-
-    if args.inc:
-        print("Generating the inc scene data for kernel %d ..." % i)
-        with etree.xmlfile(os.path.join(output_dir, "%s_inc_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
-            sp.gen_incompleteness_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf,use_bidir=args.bidir, )
-
-    i += 1
-
-print("Saved scene data to %s" % output_dir)
+#
+# print("Generating scene data...")
+# i = 0
+# for kernel in kt.visible_kernels:
+#
+#     print("Generating the scene data for kernel %d ..." % i)
+#     with etree.xmlfile(os.path.join(output_dir, "%s_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+#         sp.gen_scene_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf)
+#
+#     if args.inc:
+#         print("Generating the inc scene data for kernel %d ..." % i)
+#         with etree.xmlfile(os.path.join(output_dir, "%s_inc_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+#             sp.gen_incompleteness_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf,use_bidir=args.bidir, )
+#
+#     i += 1
+#
+# print("Saved scene data to %s" % output_dir)
 
 if args.visualize:
     gl_viewer = Viewer()
