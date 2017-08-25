@@ -150,7 +150,7 @@ def resize(viewer):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(60, float(viewer.width()) / float(viewer.height()),
-                   0.5, np.linalg.norm(frustum.far_plane.position)*5)
+                   0.5, np.linalg.norm(frustum.far_plane.position)*50)
     glMatrixMode(GL_MODELVIEW)
 
 argparser = argparse.ArgumentParser()
