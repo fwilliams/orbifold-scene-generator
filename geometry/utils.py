@@ -183,3 +183,28 @@ def make_projective_vector(v, dim=4):
         raise ValueError("Attempted to convert projective point, %s, to a direction" % v)
 
     return ret
+
+def make_legal_point(pt, shape = -1):
+    """
+    Takes an array like object or numpy array as input and outputs a 4-dimensional projective point as a numpy array.
+    
+    if the input point does not have desired shape, then
+
+    :param pt: The input array-like object.
+    :param shape: the target shape of the input point
+    :return: A 4-dimensional projective point whose last co-ordinate is 1.
+    """
+
+    if shape != -1 and pt.shape != shape:
+        raise ValueError("Vertex does not have the desired dimension")
+
+    if pt.shape == (2,):
+        pt = np.array((pt[0], pt[1], 0.0, 1.0))
+    elif pt.shape == (3,):
+        pt = np.array((pt[0], pt[1], pt[2], 1.0))
+    elif pt.shape == (4,):
+        pt = make_projective_point(pt)
+    else:
+        raise ValueError("Triangle cannot be constructed from non 2d, 3d or projective 3d points. Got %s" % pt)
+
+    return pt
