@@ -123,6 +123,7 @@ argparser.add_argument("scale", help="args.scale factor for the scene.", type=fl
 argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are going to draw", action="store_true")
 argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
                                                  "incompleteness images", action="store_true")
+argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
 args = argparser.parse_args()
 
 if args.type == "xx":
@@ -168,6 +169,10 @@ output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.t
 output_dir = os.path.realpath(output_dir)
 os.mkdir(output_dir)
 
+split_paths = os.path.split(args.filename)
+print("Generating fds for scenes %s..." %split_paths[1])
+filename = os.path.splitext(split_paths[1])
+
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 geometry_display_list = None
@@ -175,13 +180,16 @@ geometry_display_list = None
 print("Generating scene data...")
 i = 0
 for kernel in kt.visible_kernels:
-    scene_doc = sp.gen_scene_xml(args.filename, list(kernel.fundamental_domain_transforms))
-    inc_doc = sp.gen_incompleteness_xml(args.filename, list(kernel.fundamental_domain_transforms), use_bidir=args.bidir)
 
-    with open(os.path.join(output_dir, "img_%d_clr.xml" % i), "w+") as f:
-        f.write(etree.tostring(scene_doc, pretty_print=True))
-    with open(os.path.join(output_dir, "inc_img_%d_clr.xml" % i), "w+") as f:
-        f.write(etree.tostring(inc_doc, pretty_print=True))
+    print("Generating the scene data for kernel %d ..." % i)
+    with etree.xmlfile(os.path.join(output_dir, "%s_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+        sp.gen_scene_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf)
+
+    if args.inc:
+        print("Generating the inc scene data for kernel %d ..." % i)
+        with etree.xmlfile(os.path.join(output_dir, "%s_inc_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+            sp.gen_incompleteness_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf,use_bidir=args.bidir, )
+
     i += 1
 
 print("Saved scene data to %s" % output_dir)
