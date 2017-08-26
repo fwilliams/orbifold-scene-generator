@@ -207,34 +207,34 @@ else:
         assert False, "Invalid scene type, %s. Must be one of xx x2222 x442 x642 x333 or xN, " \
                       "where N is a positive integer." % args.type
 
-# output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
-# output_dir = os.path.realpath(output_dir)
-# os.mkdir(output_dir)
-#
-# split_paths = os.path.split(args.filename)
-# print("Generating fds for scenes %s..." %split_paths[1])
-# filename = os.path.splitext(split_paths[1])
-#
+output_dir = "./output_%s_%s" % (os.path.basename(args.filename), str(int(time.time())))
+output_dir = os.path.realpath(output_dir)
+os.mkdir(output_dir)
+
+split_paths = os.path.split(args.filename)
+print("Generating fds for scenes %s..." %split_paths[1])
+filename = os.path.splitext(split_paths[1])
+
 frustum = scene_parsing.make_frustum(args.filename)
 kt = tiling.KernelTiling(base_kernel, frustum, args.overlap)
 geometry_display_list = None
-#
-# print("Generating scene data...")
-# i = 0
-# for kernel in kt.visible_kernels:
-#
-#     print("Generating the scene data for kernel %d ..." % i)
-#     with etree.xmlfile(os.path.join(output_dir, "%s_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
-#         sp.gen_scene_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf)
-#
-#     if args.inc:
-#         print("Generating the inc scene data for kernel %d ..." % i)
-#         with etree.xmlfile(os.path.join(output_dir, "%s_inc_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
-#             sp.gen_incompleteness_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf,use_bidir=args.bidir, )
-#
-#     i += 1
-#
-# print("Saved scene data to %s" % output_dir)
+
+print("Generating scene data...")
+i = 0
+for kernel in kt.visible_kernels:
+
+    print("Generating the scene data for kernel %d ..." % i)
+    with etree.xmlfile(os.path.join(output_dir, "%s_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+        sp.gen_scene_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf)
+
+    if args.inc:
+        print("Generating the inc scene data for kernel %d ..." % i)
+        with etree.xmlfile(os.path.join(output_dir, "%s_inc_img_%d_clr.xml" % (filename[0], i)), encoding='utf-8') as xf:
+            sp.gen_incompleteness_xml_incremental(args.filename, list(kernel.fundamental_domain_transforms), xf,use_bidir=args.bidir, )
+
+    i += 1
+
+print("Saved scene data to %s" % output_dir)
 
 if args.visualize:
     gl_viewer = Viewer()
