@@ -404,9 +404,15 @@ class LineKernel(object):
         return "Line Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
-        for direction in 1, -1:
-            new_ctr = self._center[0] + np.array(direction) * (self._diameter - overlap)
-            yield LineKernel(self._radius, self._vradius, np.array((new_ctr, 0)), self._group, self._flag_ceiling, self._flag_floor )
+        neighbor_directions = [(1, 0), (-1, 0)]
+        if self._flag_ceiling:
+            neighbor_directions.append((0, 1))
+        if self._flag_floor:
+            neighbor_directions.append((0, -1))
+
+        for direction in neighbor_directions:
+            new_ctr = self._center + np.array((direction[0] * (self._diameter - overlap), direction[1] * (self._vdiameter - overlap)))
+            yield LineKernel(self._radius, self._vradius, new_ctr, self._group, self._flag_ceiling, self._flag_floor )
 
     @property
     def fundamental_domains(self):
@@ -420,14 +426,21 @@ class LineKernel(object):
     @property
     def translational_fundamental_domains(self):
         for i in range(self._diameter):
-            pos = np.array((i - self._radius)) + np.array(self._center[0])
-            translate = utils.translation_matrix(
-                abs(pos) * self._group.translational_subgroup_basis[1 if pos > 0 else 0])
+            for j in range(self._vdiameter):
+                pos = np.array((i - self._radius, (j - self._vradius) if self._vdiameter != 1 else 0)) + np.array(self._center)
+                #skip the tfds under the floor
+                if self._flag_ceiling and not self._flag_floor and pos[1] < 0:
+                    continue;
+                # skip the tfds above the floor
+                if self._flag_floor and not self._flag_ceiling and pos[1] > 0:
+                    continue;
+                translate = utils.translation_matrix(
+                    abs(pos[0]) * self._group.translational_subgroup_basis[1 if pos[0] > 0 else 0] + pos[1] * self._group.translational_subgroup_basis[2])
 
-            prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+                prism = shapes.Prism(self._group.height*2, *self._group.translational_fd_vertices)
 
-            prism.transform(translate)
-            yield np.array([pos, 0]), translate, prism
+                prism.transform(translate)
+                yield pos, translate, prism
 
     @property
     def translational_fundamental_domain_transforms(self):
