@@ -23,7 +23,7 @@ def init(viewer):
 
     glMatrixMode(GL_PROJECTION)
     gluPerspective(60, float(viewer.width()) / float(viewer.height()),
-                   0.5, np.linalg.norm(frustum.far_plane.position)*5)
+                   0.5, np.linalg.norm(frustum.far_plane.position)*50)
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -119,7 +119,7 @@ def draw(viewer):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     viewer.skybox.draw(viewer.camera_controller.camera_rotation.transpose(),
-                       np.linalg.norm(frustum.far_plane.position)*5)
+                       np.linalg.norm(frustum.far_plane.position)*50)
 
     glCallList(geometry_display_list)
 
@@ -139,6 +139,10 @@ def draw(viewer):
     if gl_viewer.flag_axes:
         gl_geometry.draw_axes((10000, 10000, 10000))
 
+    glColor3f(0, 1, 1)
+    glLineWidth(2.0)
+    gl_geometry.draw_wire_prism(frustum)
+    glLineWidth(1.0)
     glPopAttrib(GL_ENABLE_BIT)
     glFinish()
 
@@ -147,7 +151,7 @@ def resize(viewer):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(60, float(viewer.width()) / float(viewer.height()),
-                   0.5, np.linalg.norm(frustum.far_plane.position)*5)
+                   0.5, np.linalg.norm(frustum.far_plane.position)*50)
     glMatrixMode(GL_MODELVIEW)
 
 argparser = argparse.ArgumentParser()
@@ -173,13 +177,13 @@ if args.type == "xx":
     base_kernel = tiling.LineKernel(args.radius, args.vradius, (0,0), group)
 elif args.type == "x2222":
     # *2222
-    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
+    group = tiling.PlanarReflectionGroup(args.height,args.ceiling, args.floor, (0, 0, 0),
                                          (args.scale, 0, 0), (args.scale, 0, args.scale), (0, 0, args.scale))
-    base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
+    base_kernel = tiling.SquareKernel(args.radius, args.vradius, (0, 0, 0), group)
 elif args.type == "x442":
     # *2222
-    group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
-    base_kernel = tiling.SquareKernel(args.radius, (0, 0), group)
+    group = tiling.PlanarReflectionGroup(args.height, args.ceiling, args.floor ,(0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
+    base_kernel = tiling.SquareKernel(args.radius, args.vradius, (0, 0, 0), group)
 elif args.type == "x632":
     # *632
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
