@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<scene version="0.5.0">
+    <!--<integrator type="path"/>-->
+
+    <!--<sensor type="perspective">-->
+    <!--<float name="farClip" value="10000"/>-->
+    <!--<float name="focusDistance" value="000"/>-->
+    <!--<float name="fov" value="75"/>-->
+    <!--<string name="fovAxis" value="x"/>-->
+    <!--<float name="nearClip" value="100"/>-->
+    <!--<transform name="toWorld">-->
+    <!--<lookat target="208, 240, 190" origin="148, 499, 490" up="0.0, 1.0, 0.0"/>-->
+    <!--</transform>-->
+
+    <!--<sampler type="independent">-->
+    <!--<integer name="sampleCount" value="128"/>-->
+    <!--</sampler>-->
+
+    <!--<film type="hdrfilm">-->
+    <!--<integer name="height" value="512"/>-->
+    <!--<integer name="width" value="512"/>-->
+
+    <!--<rfilter type="gaussian"/>-->
+    <!--</film>-->
+    <!--</sensor>-->
+    <integrator type="opath">
+        <string name="otype" value="*2222"/>
+        <spectrum name="k1" value="0.5"/>
+        <spectrum name="k2" value="0.5"/>
+        <spectrum name="k3" value="0.5"/>
+        <spectrum name="k4" value="0.5"/>
+        <spectrum name="eta1" value="0.1"/>
+        <spectrum name="eta2" value="0.1"/>
+        <spectrum name="eta3" value="0.1"/>
+        <spectrum name="eta4" value="0.1"/>
+    </integrator>
+
+    <sensor type="perspective">
+        <float name="farClip" value="4800"/>
+        <float name="focusDistance" value="1264.51"/>
+        <float name="fov" value="90"/>
+        <string name="fovAxis" value="x"/>
+        <float name="nearClip" value="1"/>
+        <transform name="toWorld">
+            <lookat target="0.0, 0.0, 1.0" origin="0.0, 0.0, 0.0" up="0.0, 1.0, 0.0"/>
+        </transform>
+
+        <sampler type="independent">
+            <integer name="sampleCount" value="512"/>
+        </sampler>
+
+        <film type="hdrfilm">
+            <integer name="width" value="1280"/>
+            <integer name="height" value="1280"/>
+            <string name="componentFormat" value="float32"/>
+            <rfilter type="gaussian">
+                <!--<float name="stddev" value="0.5"/>-->
+            </rfilter>
+        </film>
+    </sensor>
+    <!--
+        #########################
+        #  Material definitions #
+        #########################
+    !-->
+    <bsdf type="diffuse" id="gray">
+        <spectrum name="reflectance" value="400:0.1, 500:0.1, 600:0.1, 700:0.1"/>
+    </bsdf>
+
+    <bsdf type="diffuse" id="checker">
+        <spectrum name="reflectance" value="400:0.1, 500:0.1, 600:0.1, 700:0.1"/>
+        <texture type="bitmap" name="diffuseReflectance">
+            <string name="filename" value="meshes/checkerboard.png"/>
+        </texture>
+    </bsdf>
+
+    <bsdf type="diffuse" id="bricks">
+        <spectrum name="reflectance" value="400:0.3, 500:0.3, 600:0.3, 700:0.3"/>
+        <texture type="bitmap" name="diffuseReflectance">
+            <string name="filename" value="meshes/bricks.png"/>
+        </texture>
+    </bsdf>
+
+    <bsdf type="conductor" id="mirror">
+        <string name="material" value="Ag"/>
+    </bsdf>
+
+    <bsdf type="diffuse" id="light">
+        <spectrum name="reflectance" value="400:0.78, 500:0.78, 600:0.78, 700:0.78"/>
+    </bsdf>
+
+
+    <!--
+        ###############################
+        #  Scene Geometry Definitions #
+        ###############################
+    !-->
+    <shape type="shapegroup" id="scene">
+        <shape type="obj">
+            <string name="filename" value="meshes/cbox_floor.obj"/>
+            <ref id="checker"/>
+        </shape>
+
+        <shape type="obj">
+            <string name="filename" value="meshes/cbox_ceiling.obj"/>
+            <ref id="gray"/>
+        </shape>
+
+        <shape type="obj">
+            <string name="filename" value="meshes/cbox_smallbox.obj"/>
+
+            <bsdf type="roughplastic">
+                <string name="distribution" value="ggx"/>
+                <srgb name="diffuseReflectance" value="#303055"/>
+            </bsdf>
+        </shape>
+
+        <shape type="sphere">
+            <point name="center" x="0" y="0" z="0"/>
+            <float name="radius" value="1"/>
+
+            <bsdf type="roughconductor">
+                <string name="distribution" value="ggx"/>
+            </bsdf>
+
+            <transform name="toWorld">
+                <translate x="0" y="1.0" z="0"/>
+                <scale x="100" y="100" z="100"/>
+                <translate x="375" y="0" z="300"/>
+            </transform>
+        </shape>
+    </shape>
+
+
+    <!--
+    Scene geometry instancess
+    !-->
+    <shape type="instance">
+        <ref id="scene"/>
+    </shape>
+
+    <shape type="obj">
+        <string name="filename" value="meshes/cbox_luminaire.obj"/>
+
+        <transform name="toWorld">
+            <translate x="0" y="-0.5" z="0"/>
+        </transform>
+
+        <ref id="light"/>
+
+        <emitter type="area">
+            <spectrum name="radiance" value="120"/>
+        </emitter>
+    </shape>
+
+</scene>

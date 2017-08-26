@@ -105,7 +105,7 @@ class FriezeReflectionGroup(object):
 
 
 class PlanarReflectionGroup(object):
-    def __init__(self, height, *vertices):
+    def __init__(self, height, flag_ceiling, flag_floor, *vertices):
         """
         Construct the reflection group corresponding to a configuration of mirrors specified by the closed, convex
         polygon determined by the parameter vertices. The group must either be a purely dihedral group of integer order
@@ -133,7 +133,8 @@ class PlanarReflectionGroup(object):
         #
         self._height = height
         self._ground_plane = shapes.Plane(vs[0], vs[1], vs[2])
-
+        self._flag_ceiling = flag_ceiling
+        self._flag_floor = flag_floor
         #
         # Populate mirror edge index pairs and list of vertices
         #
@@ -145,6 +146,12 @@ class PlanarReflectionGroup(object):
             vup = vs[e] + self._ground_plane.normal
             self._mirror_edges.append((e, (e + 1) % len(vs)))
             self._mirror_planes.append(shapes.Plane(v1, v2, vup))
+
+        #add floor mirror plane if we only have floor mirror else add ceiling mirror plane
+        if not flag_ceiling and flag_floor:
+            self._vmirror_planes = shapes.Plane((0, 0, 1), (0, 0, 0), (1, 0, 0))
+        else:
+            self._vmirror_planes = shapes.Plane((0, height, 1), (0, height, 0), (1, height, 0))
 
         #
         # Find the two edges with the mimimal internal angle and store their planes as plane1 and plane2
@@ -192,6 +199,13 @@ class PlanarReflectionGroup(object):
             p.transform(last_transform)
             last_transform = np.dot(utils.reflection_matrix(p), last_transform)
 
+        #reflect all transforms based on ceiling or floor reflection
+        if flag_ceiling or flag_floor:
+            for i in range(self._two_n):
+                last_transform = copy.deepcopy(self._dihedral_transforms[i])
+                last_transform = np.dot(utils.reflection_matrix(self._vmirror_planes), last_transform)
+                self._dihedral_transforms.append(last_transform)
+
         #
         # Compute the normals of the outer edges of the polygon (which bound the dihedral tile) and the distance from
         # the center of the dihedral tile to each outer edge.
@@ -202,7 +216,7 @@ class PlanarReflectionGroup(object):
         outer_edges.pop((min_angle_edge_index - 1) % len(outer_edges))
 
         self._translational_fd_edges = []
-        for i in range(len(self._dihedral_transforms)):
+        for i in range(self._two_n):
             tx = self._dihedral_transforms[i]
             for j in range(len(outer_edges)):
                 # This handles the case where there are 2 outer edges
@@ -224,10 +238,17 @@ class PlanarReflectionGroup(object):
         # Due to the dihedral symmetry, we know half the outer edges are just reflected copies of the other half
         # so we can delete them to get the set of edges whose normals form the basis
         self._translational_fd_vertices = [e[0] for e in self._translational_fd_edges]
+
+        #if only floor mirror, the tfd vertices should move downward height
+        if not flag_ceiling and flag_floor:
+            for i in range(len(self._translational_fd_vertices)):
+                self._translational_fd_vertices[i] = self._translational_fd_vertices[i] - np.array((0, height, 0, 0))
+
         basis_edges = self._translational_fd_edges[0:len(self._translational_fd_edges)/2]
         self._translational_basis = \
             [2.0*(0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index]) for e in basis_edges]
 
+        self._translational_basis.append(2 * height * np.array((0, 1, 0, 0)))
 
     @property
     def n(self):
@@ -271,9 +292,17 @@ class PlanarReflectionGroup(object):
     def mirror_planes(self):
         return self._mirror_planes
 
+    @property
+    def flag_ceiling(self):
+        return self._flag_ceiling
+
+    @property
+    def flag_floor(self):
+        return self._flag_floor
+
 
 class SquareKernel(object):
-    def __init__(self, radius, center, group):
+    def __init__(self, radius, vradius, center, group):
         if group.n not in [2, 4]:
             raise ValueError("Cannot construct a square kernel from planar group with dihedral "
                              "subgroup of order not 2 or 4")
@@ -281,14 +310,21 @@ class SquareKernel(object):
         self._radius = radius
         self._diameter = 2 * radius + 1
         self._center = np.array(center)
-
+        self._vradius = vradius
+        self._vdiameter = 2 * vradius + 1 if self._group.flag_ceiling or self._group.flag_floor else 1
     def __str__(self):
         return "Square Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
-        for direction in (1, 0), (0, 1), (-1, 0), (0, -1):
-            new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
-            yield SquareKernel(self._radius, new_ctr, self._group)
+        neighbor_directions = [(1, 0, 0), (0, 1, 0), (-1, 0, 0), (0, -1, 0)]
+        if self._group.flag_ceiling:
+            neighbor_directions.append((0, 0, 1))
+        if self._group.flag_floor:
+            neighbor_directions.append((0, 0, -1))
+
+        for direction in neighbor_directions:
+            new_ctr = self._center + np.array((direction[0] * (self._diameter - overlap), direction[1] * (self._diameter - overlap), direction[2] * (self._vdiameter - overlap)))
+            yield SquareKernel(self._radius, self._vradius, new_ctr, self._group)
 
     @property
     def fundamental_domains(self):
@@ -303,15 +339,21 @@ class SquareKernel(object):
     def translational_fundamental_domains(self):
         for i in range(self._diameter):
             for j in range(self._diameter):
-                pos = np.array((i - self._radius, j - self._radius)) + np.array(self._center)
-                translate = utils.translation_matrix(
-                    pos[0] * self._group.translational_subgroup_basis[0] +
-                    pos[1] * self._group.translational_subgroup_basis[1])
+                for k in range(self._vdiameter):
+                    pos = np.array((i - self._radius, j - self._radius, (k - self._vradius) if self._vdiameter != 1 else 0)) + np.array(self._center)
+                    if self._group.flag_ceiling and not self._group.flag_floor and pos[2] < 0:
+                        continue;
+                    if self._group.flag_floor and not self._group.flag_ceiling and pos[2] > 0:
+                        continue;
+                    translate = utils.translation_matrix(
+                        pos[0] * self._group.translational_subgroup_basis[0] +
+                        pos[1] * self._group.translational_subgroup_basis[1] +
+                        pos[2] * self._group.translational_subgroup_basis[2])
 
-                prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
+                    prism = shapes.Prism(self._group.height*2, *self._group.translational_fd_vertices)
 
-                prism.transform(translate)
-                yield pos, translate, prism
+                    prism.transform(translate)
+                    yield pos, translate, prism
 
     @property
     def translational_fundamental_domain_transforms(self):
