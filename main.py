@@ -139,8 +139,10 @@ def draw(viewer):
     if gl_viewer.flag_axes:
         gl_geometry.draw_axes((10000, 10000, 10000))
 
-    glColor3f(1, 1, 1)
+    glColor3f(0, 1, 1)
+    glLineWidth(2.0)
     gl_geometry.draw_wire_prism(frustum)
+    glLineWidth(1.0)
     glPopAttrib(GL_ENABLE_BIT)
 
     glFinish()
