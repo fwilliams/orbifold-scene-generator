@@ -140,7 +140,6 @@ def draw(viewer):
         gl_geometry.draw_axes((10000, 10000, 10000))
 
     glPopAttrib(GL_ENABLE_BIT)
-
     glFinish()
 
 
@@ -171,7 +170,7 @@ args = argparser.parse_args()
 if args.type == "xx":
     group = tiling.FriezeReflectionGroup(args.height, (0, 1, 0),
                                          (0, 0.5*args.height, 0), (0, 0.5*args.height, args.scale), args.ceiling, args.floor)
-    base_kernel = tiling.LineKernel(args.radius, args.vradius, (0,0), group, args.ceiling, args.floor)
+    base_kernel = tiling.LineKernel(args.radius, args.vradius, (0,0), group)
 elif args.type == "x2222":
     # *2222
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
