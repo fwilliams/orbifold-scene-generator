@@ -168,13 +168,12 @@ argparser.add_argument("-i", "--inc", help="output incompleteness scenes", actio
 argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
 argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
 argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
-argparser.add_argument("--vradius", help="The kernel vertical radius (default:10)", type = int, default = 10)
 args = argparser.parse_args()
 
 if args.type == "xx":
     group = tiling.FriezeReflectionGroup(args.height, (0, 1, 0),
                                          (0, 0.5*args.height, 0), (0, 0.5*args.height, args.scale), args.ceiling, args.floor)
-    base_kernel = tiling.LineKernel(args.radius, args.vradius, (0,0), group)
+    base_kernel = tiling.LineKernel(args.radius,(0,0), group)
 elif args.type == "x2222":
     # *2222
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),

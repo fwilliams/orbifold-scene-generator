@@ -29,26 +29,23 @@ class FriezeReflectionGroup(object):
             shapes.Plane(ctr2, ctr2 + up_proj, ctr2 + right_proj)
         ]
 
-        #add floor mirror plane if we only have floor mirror else add ceiling mirror plane
-        if not self._flag_ceiling and self._flag_floor:
-            self._vmirror_planes = shapes.Plane((0, 0, 1), (0, 0, 0), (1, 0, 0))
-        else:
-            self._vmirror_planes = shapes.Plane((0, height, 1), (0, height, 0), (1, height, 0))
+        b = ctr1 - up_proj * height * 0.5
+
+        self._ground_plane = shapes.Plane(b, b + m1n, b + right_proj)
+        self._ceiling_plane = shapes.Plane(b+ height * up_proj, b + right_proj+ height * up_proj, b + m1n+ height * up_proj)
 
         self._dihedral_transforms = [np.eye(4), utils.reflection_matrix(self._mirror_planes[0])]
 
         #there are 4 fds in tfd with ceiling or floor mirror
         if self._flag_ceiling or self._flag_floor:
-            self._dihedral_transforms = []
-            last_transform = np.identity(4)
-            for i in range(4):
-                self._dihedral_transforms.append(last_transform)
-                p = copy.deepcopy([self._mirror_planes[0], self._vmirror_planes][i % 2])
-                p.transform(last_transform)
-                last_transform = np.dot(utils.reflection_matrix(p), last_transform)
+            reflect_plane = self._ground_plane if self._flag_floor else self._ceiling_plane
+            for tx in range(len(self._dihedral_transforms)):
+                self._dihedral_transforms.append(np.dot(self._dihedral_transforms[tx], utils.reflection_matrix(reflect_plane)))
 
-        self._translational_basis = [2*m1n*width, 2*m2n*width, 2*height*up_proj]
-        b = ctr1 - up_proj * height * 0.5
+
+        self._translational_basis = [2*m1n*width, 2*m2n*width]
+        if self._flag_ceiling or self._flag_floor:
+            self._translational_basis.extend([2 * height * up_proj, -2 * height * up_proj])
 
         self._vertices = [b - right_proj*width*0.5, b + right_proj*width*0.5,
                           b + right_proj*width*0.5 + m1n*width,
@@ -61,7 +58,7 @@ class FriezeReflectionGroup(object):
                 b - right_proj * width * 0.5 + m1n*width*2.0]
 
         #if only floor mirror, move tfd vertices downward
-        if not self._flag_ceiling and self._flag_floor:
+        if self._flag_floor:
             for i in range(len(tfdv)):
                 tfdv[i] = tfdv[i] - up_proj*height
 
@@ -71,7 +68,7 @@ class FriezeReflectionGroup(object):
                                         (tfdv[2], tfdv[3]),
                                         (tfdv[3], tfdv[0])]
         self._height = height
-        self._ground_plane = shapes.Plane(b, b + m1n, b + right_proj)
+
 
     @property
     def n(self):
@@ -405,7 +402,7 @@ class HexKernel(object):
 
 
 class LineKernel(object):
-    def __init__(self, radius, vradius, center, group):
+    def __init__(self, radius, center, group):
         if group.n not in [1]:
             raise ValueError("Cannot construct a line kernel from planar group with dihedral "
                              "subgroup of order not 1")
@@ -413,23 +410,18 @@ class LineKernel(object):
         self._radius = radius
         self._diameter = 2 * radius + 1
         self._center = np.array(center)
-        self._vradius = vradius
-        self._vdiameter = 2 * vradius + 1 if self._group.flag_ceiling or self._group.flag_floor else 1
-
 
     def __str__(self):
         return "Line Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
         neighbor_directions = [(1, 0), (-1, 0)]
-        if self._group.flag_ceiling:
-            neighbor_directions.append((0, 1))
-        if self._group.flag_floor:
-            neighbor_directions.append((0, -1))
+        if self._group.flag_ceiling and self._group.flag_floor:
+            neighbor_directions.extend([(0, 1),(0, -1)])
 
         for direction in neighbor_directions:
-            new_ctr = self._center + np.array((direction[0] * (self._diameter - overlap), direction[1] * (self._vdiameter - overlap)))
-            yield LineKernel(self._radius, self._vradius, new_ctr, self._group)
+            new_ctr = self._center + np.array(direction) * (self._diameter - overlap)
+            yield LineKernel(self._radius, new_ctr, self._group)
 
     @property
     def fundamental_domains(self):
@@ -443,14 +435,10 @@ class LineKernel(object):
     @property
     def translational_fundamental_domains(self):
         for i in range(self._diameter):
-            for j in range(self._vdiameter):
-                pos = np.array((i - self._radius, (j - self._vradius) if self._vdiameter != 1 else 0)) + np.array(self._center)
-                #skip the tfds under the floor
-                if self._group.flag_ceiling and not self._group.flag_floor and pos[1] < 0:
-                    continue;
-                # skip the tfds above the floor
-                if self._group.flag_floor and not self._group.flag_ceiling and pos[1] > 0:
-                    continue;
+            vdiameter = self._diameter if self._group.flag_ceiling and self._group.flag_floor else 1
+            for j in range(vdiameter):
+                pos = np.array((i - self._radius, (j - self._radius) if vdiameter != 1 else 0)) + np.array(self._center)
+
                 translate = utils.translation_matrix(
                     abs(pos[0]) * self._group.translational_subgroup_basis[1 if pos[0] > 0 else 0] + pos[1] * self._group.translational_subgroup_basis[2])
 
