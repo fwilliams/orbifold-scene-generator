@@ -259,7 +259,7 @@ class PlanarReflectionGroup(object):
         self._translational_basis = \
             [2.0*(0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index]) for e in basis_edges[0:2]]
 
-        self._translational_basis.append(2 * height * np.array((0, 1, 0, 0)))
+        self._translational_basis.append(2*height * self._ground_plane.normal)
 
     @property
     def n(self):
