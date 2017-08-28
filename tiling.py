@@ -212,7 +212,7 @@ class PlanarReflectionGroup(object):
             last_transform = np.dot(utils.reflection_matrix(p), last_transform)
 
         #reflect all transforms based on ceiling or floor reflection
-        if flag_ceiling or flag_floor:
+        if self._flag_ceiling or self._flag_floor:
             for i in range(len(self._dihedral_transforms)):
                 reflect_plane = self._ground_plane if self._flag_floor else self._ceiling_plane
                 self._dihedral_transforms.append(np.dot(self._dihedral_transforms[i],utils.reflection_matrix(reflect_plane)))
@@ -251,7 +251,7 @@ class PlanarReflectionGroup(object):
         self._translational_fd_vertices = [e[0] for e in self._translational_fd_edges]
 
         #if only floor mirror, the tfd vertices should move downward height
-        if not flag_ceiling and flag_floor:
+        if self._flag_ceiling:
             for i in range(len(self._translational_fd_vertices)):
                 self._translational_fd_vertices[i] = self._translational_fd_vertices[i] - np.array((0, height, 0, 0))
 
