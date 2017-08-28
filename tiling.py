@@ -43,9 +43,7 @@ class FriezeReflectionGroup(object):
                 self._dihedral_transforms.append(np.dot(self._dihedral_transforms[tx], utils.reflection_matrix(reflect_plane)))
 
 
-        self._translational_basis = [2*m1n*width, 2*m2n*width]
-        if self._flag_ceiling or self._flag_floor:
-            self._translational_basis.extend([2 * height * up_proj, -2 * height * up_proj])
+        self._translational_basis = [2*m1n*width, 2*m2n*width, 2 * height * up_proj, -2 * height * up_proj]
 
         self._vertices = [b - right_proj*width*0.5, b + right_proj*width*0.5,
                           b + right_proj*width*0.5 + m1n*width,
@@ -442,7 +440,7 @@ class LineKernel(object):
                 translate = utils.translation_matrix(
                     abs(pos[0]) * self._group.translational_subgroup_basis[1 if pos[0] > 0 else 0] + pos[1] * self._group.translational_subgroup_basis[2])
 
-                prism = shapes.Prism(self._group.height*2, *self._group.translational_fd_vertices)
+                prism = shapes.Prism(self._group.height*2 if self._group.flag_ceiling or self._group.flag_floor else self._group.height, *self._group.translational_fd_vertices)
 
                 prism.transform(translate)
                 yield pos, translate, prism
