@@ -250,8 +250,8 @@ class PlanarReflectionGroup(object):
         # so we can delete them to get the set of edges whose normals form the basis
         self._translational_fd_vertices = [e[0] for e in self._translational_fd_edges]
 
-        #if only floor mirror, the tfd vertices should move downward height
-        if self._flag_ceiling:
+        #if there is a floor mirror, the tfd vertices should move downward height
+        if self._flag_floor:
             for i in range(len(self._translational_fd_vertices)):
                 self._translational_fd_vertices[i] = self._translational_fd_vertices[i] - np.array((0, height, 0, 0))
 
