@@ -144,7 +144,6 @@ def draw(viewer):
     gl_geometry.draw_wire_prism(frustum)
     glLineWidth(1.0)
     glPopAttrib(GL_ENABLE_BIT)
-
     glFinish()
 
 
@@ -166,12 +165,15 @@ argparser.add_argument("-v", "--visualize", help="Visualize the kernels we are g
 argparser.add_argument("-b", "--bidir", help="Use bidirectional path tracing instead of path tracing for "
                                                  "incompleteness images", action="store_true")
 argparser.add_argument("-i", "--inc", help="output incompleteness scenes", action="store_true")
+argparser.add_argument("-c", "--ceiling", help="The flag used to generate ceiling reflections", action="store_true")
+argparser.add_argument("-f", "--floor", help="The flag used to generate floor reflections", action="store_true")
+argparser.add_argument("--height", help="the height of the scene (default:560)", type = int, default = 560.0)
 args = argparser.parse_args()
 
 if args.type == "xx":
-    group = tiling.FriezeReflectionGroup(args.scale, (0, 1, 0),
-                                         (0, 0.5*args.scale, 0), (0, 0.5*args.scale, args.scale))
-    base_kernel = tiling.LineKernel(args.radius, 0, group)
+    group = tiling.FriezeReflectionGroup(args.height, (0, 1, 0),
+                                         (0, 0.5*args.height, 0), (0, 0.5*args.height, args.scale), args.ceiling, args.floor)
+    base_kernel = tiling.LineKernel(args.radius,(0,0), group)
 elif args.type == "x2222":
     # *2222
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
