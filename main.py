@@ -178,11 +178,11 @@ elif args.type == "x2222":
     # *2222
     group = tiling.PlanarReflectionGroup(args.height,args.ceiling, args.floor, (0, 0, 0),
                                          (args.scale, 0, 0), (args.scale, 0, args.scale), (0, 0, args.scale))
-    base_kernel = tiling.SquareKernel(args.radius, args.vradius, (0, 0, 0), group)
+    base_kernel = tiling.SquareKernel(args.radius, (0, 0, 0), group)
 elif args.type == "x442":
     # *2222
     group = tiling.PlanarReflectionGroup(args.height, args.ceiling, args.floor ,(0, 0, 0), (args.scale, 0, 0), (args.scale, 0, args.scale))
-    base_kernel = tiling.SquareKernel(args.radius, args.vradius, (0, 0, 0), group)
+    base_kernel = tiling.SquareKernel(args.radius, (0, 0, 0), group)
 elif args.type == "x632":
     # *632
     group = tiling.PlanarReflectionGroup(args.scale, (0, 0, 0),
