@@ -187,12 +187,12 @@ elif args.type == "x632":
     # *632
     group = tiling.PlanarReflectionGroup(args.height, args.ceiling, args.floor, (0, 0, 0),
                                          (0.5*args.scale, 0, 0), (0, 0, args.scale * np.sqrt(3.0) / 2.0))
-    base_kernel = tiling.HexKernel(args.radius, args.vradius, (0, 0, 0), group)
+    base_kernel = tiling.HexKernel(args.radius, (0, 0, 0), group)
 elif args.type == "x333":
     # *333
     group = tiling.PlanarReflectionGroup(args.height, args.ceiling, args.floor, (0, 0, 0),
                                          (args.scale, 0, 0), (0.5*args.scale, 0, args.scale * np.sqrt(3.0) / 2.0))
-    base_kernel = tiling.HexKernel(args.radius, args.vradius, (0, 0, 0), group)
+    base_kernel = tiling.HexKernel(args.radius, (0, 0, 0), group)
 else:
     if args.type.startswith("x"):
         try:
