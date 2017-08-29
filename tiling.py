@@ -377,7 +377,7 @@ class SquareKernel(object):
 
 
 class HexKernel(object):
-    def __init__(self, radius, vradius, center, group):
+    def __init__(self, radius, center, group):
         if group.n not in [3, 6]:
             raise ValueError("Cannot construct a hex kernel from planar group with dihedral "
                              "subgroup of order not 3 or 6. Got group of order %d" % group.n)
@@ -385,8 +385,6 @@ class HexKernel(object):
         self._radius = radius
         self._diameter = 2 * radius + 1
         self._center = np.array(center)
-        self._vradius = vradius
-        self._vdiameter = 2 * vradius + 1 if self._group.flag_ceiling or self._group.flag_floor else 1
 
     def __str__(self):
         return "Square Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
@@ -394,19 +392,15 @@ class HexKernel(object):
     def adjacent_kernels(self, overlap):
         directions = [(1, 1, 0), (-1, 2, 0), (-2, 1, 0), (-1, -1, 0), (1, -2, 0), (2, -1, 0)]
         shifts = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0)]
-        if self._group.flag_ceiling:
-            directions.append((0, 0, 1))
-            shifts.append((0, 0))
-
-        if self._group.flag_floor:
-            directions.append((0, 0, -1))
-            shifts.append((0, 0))
+        if self._group.flag_ceiling and self._group.flag_floor:
+            directions.extend([(0, 0, 1),(0, 0, -1)])
+            shifts.extend([(0, 0),(0, 0)])
 
         for i in range(len(directions)):
             new_ctr = self.center + np.array((directions[i][0]*self._radius + shifts[i][0]*(1-overlap),
                                              directions[i][1] * self._radius + shifts[i][1] * (1 - overlap),
-                                             directions[i][2] * (self._vdiameter - overlap)))
-            yield HexKernel(self._radius, self._vradius, new_ctr, self._group)
+                                             directions[i][2] * (self._diameter - overlap)))
+            yield HexKernel(self._radius, new_ctr, self._group)
 
     @property
     def fundamental_domains(self):
@@ -419,29 +413,22 @@ class HexKernel(object):
 
     @property
     def translational_fundamental_domains(self):
+        vdiameter = self._diameter if self._group.flag_ceiling and self._group.flag_floor else 1
         for i in range(-self._radius, self._radius+1):
             start = -self._radius if i >= 0 else -self._radius + abs(i)
             end = self._radius if i <= 0 else self._radius - abs(i)
             for j in range(start, end+1):
 
-                for k in range(self._vdiameter):
-                    vpos = self._center[2] + k - self._vradius if self._vdiameter != 1 else 0
+                for k in range(vdiameter):
                     tx = (self._center[0] + i) * self._group.translational_subgroup_basis[0] + \
                          (self._center[1] + j) * self._group.translational_subgroup_basis[1] + \
-                         (vpos) * self._group.translational_subgroup_basis[2]
-
-                    #skip the tfd below horizon if only ceiling mirror
-                    if self._group.flag_ceiling and not self._group.flag_floor and vpos < 0:
-                        continue;
-                    # skip the tfd above horizon if only floor mirror
-                    if self._group.flag_floor and not self._group.flag_ceiling and vpos > 0:
-                        continue;
+                         (self._center[2] + k - self._radius if vdiameter != 1 else 0) * self._group.translational_subgroup_basis[2]
 
                     transform = utils.translation_matrix(tx)
-                    prism = shapes.Prism(self._group.height*2, *self._group.translational_fd_vertices)
+                    prism = shapes.Prism(self._group.height*2 if self._group.flag_ceiling or self._group.flag_floor else self._group.height, *self._group.translational_fd_vertices)
                     prism.transform(transform)
 
-                    yield (self.center[0] + i, self.center[1] + j, vpos), transform, prism
+                    yield (self.center[0] + i, self.center[1] + j, self._center[2] + k - self._radius if vdiameter != 1 else 0), transform, prism
 
     @property
     def translational_fundamental_domain_transforms(self):
