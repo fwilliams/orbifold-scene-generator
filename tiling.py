@@ -422,13 +422,13 @@ class HexKernel(object):
                 for k in range(vdiameter):
                     tx = (self._center[0] + i) * self._group.translational_subgroup_basis[0] + \
                          (self._center[1] + j) * self._group.translational_subgroup_basis[1] + \
-                         (self._center[2] + k - self._radius if vdiameter != 1 else 0) * self._group.translational_subgroup_basis[2]
+                         ((self._center[2] + k - self._radius) if vdiameter != 1 else 0) * self._group.translational_subgroup_basis[2]
 
                     transform = utils.translation_matrix(tx)
                     prism = shapes.Prism(self._group.height*2 if self._group.flag_ceiling or self._group.flag_floor else self._group.height, *self._group.translational_fd_vertices)
                     prism.transform(transform)
 
-                    yield (self.center[0] + i, self.center[1] + j, self._center[2] + k - self._radius if vdiameter != 1 else 0), transform, prism
+                    yield (self.center[0] + i, self.center[1] + j, (self._center[2] + k - self._radius) if vdiameter != 1 else 0), transform, prism
 
     @property
     def translational_fundamental_domain_transforms(self):
