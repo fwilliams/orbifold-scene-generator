@@ -257,7 +257,7 @@ class PlanarReflectionGroup(object):
 
         basis_edges = self._translational_fd_edges[0:len(self._translational_fd_edges)/2]
         self._translational_basis = \
-            [2.0*(0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index]) for e in basis_edges]
+            [2.0*(0.5 * (e[0] + e[1]) - self._vertices[ctr_vertex_index]) for e in basis_edges[0:2]]
 
         self._translational_basis.append(2*height * self._ground_plane.normal)
 
@@ -390,10 +390,16 @@ class HexKernel(object):
         return "Square Kernel: %d by %d centered at %s" % (self._diameter, self._diameter, str(self._center))
 
     def adjacent_kernels(self, overlap):
-        directions = (1, 1), (-1, 2), (-2, 1), (-1, -1), (1, -2), (2, -1)
-        shifts = (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0)
+        directions = [(1, 1, 0), (-1, 2, 0), (-2, 1, 0), (-1, -1, 0), (1, -2, 0), (2, -1, 0)]
+        shifts = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0)]
+        if self._group.flag_ceiling and self._group.flag_floor:
+            directions.extend([(0, 0, 1),(0, 0, -1)])
+            shifts.extend([(0, 0),(0, 0)])
+
         for i in range(len(directions)):
-            new_ctr = self.center + np.array(directions[i])*self._radius + np.array(shifts[i])*(1-overlap)
+            new_ctr = self.center + np.array((directions[i][0]*self._radius + shifts[i][0]*(1-overlap),
+                                             directions[i][1] * self._radius + shifts[i][1] * (1 - overlap),
+                                             directions[i][2] * (self._diameter - overlap)))
             yield HexKernel(self._radius, new_ctr, self._group)
 
     @property
@@ -407,17 +413,22 @@ class HexKernel(object):
 
     @property
     def translational_fundamental_domains(self):
+        vdiameter = self._diameter if self._group.flag_ceiling and self._group.flag_floor else 1
         for i in range(-self._radius, self._radius+1):
             start = -self._radius if i >= 0 else -self._radius + abs(i)
             end = self._radius if i <= 0 else self._radius - abs(i)
             for j in range(start, end+1):
-                tx = (self._center[0] + i) * self._group.translational_subgroup_basis[0] + \
-                     (self._center[1] + j) * self._group.translational_subgroup_basis[1]
-                transform = utils.translation_matrix(tx)
-                prism = shapes.Prism(self._group.height, *self._group.translational_fd_vertices)
-                prism.transform(transform)
 
-                yield (self.center[0] + i, self.center[1] + j), transform, prism
+                for k in range(vdiameter):
+                    tx = (self._center[0] + i) * self._group.translational_subgroup_basis[0] + \
+                         (self._center[1] + j) * self._group.translational_subgroup_basis[1] + \
+                         ((self._center[2] + k - self._radius) if vdiameter != 1 else 0) * self._group.translational_subgroup_basis[2]
+
+                    transform = utils.translation_matrix(tx)
+                    prism = shapes.Prism(self._group.height*2 if self._group.flag_ceiling or self._group.flag_floor else self._group.height, *self._group.translational_fd_vertices)
+                    prism.transform(transform)
+
+                    yield (self.center[0] + i, self.center[1] + j, (self._center[2] + k - self._radius) if vdiameter != 1 else 0), transform, prism
 
     @property
     def translational_fundamental_domain_transforms(self):
